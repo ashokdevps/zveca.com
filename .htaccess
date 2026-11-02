@@ -91,6 +91,10 @@ ErrorDocument 403 "<!doctype html><meta charset=utf-8><meta name=viewport conten
     #    d) Policy pages required by the payment gateway: /terms /privacy /refund-policy /delivery-policy
     RewriteRule ^(terms|privacy|refund-policy|delivery-policy)/?$ legal.php?page=$1 [QSA,L]
 
+    #    d2) Home page: "/" shows the launch intro (index.php), which hands over to /home (index2.php).
+    RewriteRule ^index2/?$ %{ENV:BASE}/home [R=301,L]
+    RewriteRule ^home$ index2.php [QSA,L]
+
     #    e) Any other extensionless page that exists as a .php file.
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d

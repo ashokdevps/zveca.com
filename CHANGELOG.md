@@ -3,6 +3,20 @@
 What each release adds, newest first. Every release is code-only and additive: existing live data is never changed or removed (see DEPLOYMENT.md).
 Each entry lists what the upgrade adds to the database, what HR / admins should do after deploying, and the automated tests that were run.
 
+## Deepavali launch intro (no database change)
+
+- **"/" now opens with a launch intro** (`index.php`): a countdown, a rocket, a BOOM with fireworks, then the ZVECA wordmark, with lanterns and diyas around it. After 7 seconds (or on *Enter ZVECA*, *Skip intro*, Esc) it moves to the home page.
+- **The home page moved to `/home`** (`index2.php`). Old `/index2` and `/index2.php` links redirect there with a 301.
+- **The intro is shown only when it should be:**
+  - between `INTRO_START` and `INTRO_END` (India time, set at the top of `index.php`; currently 25 Oct to 16 Nov 2026);
+  - once per browser every 12 hours (cookie `zv_intro`).
+  - Search engines, link-preview bots (WhatsApp, LinkedIn…), Lighthouse and other bots always get the home page at "/", so SEO and share previews are unchanged.
+  - `/?intro=1` previews the intro at any time, and `/?intro=0` skips it.
+- **Sound** is off until the visitor turns it on (browsers block audio before a tap). The choice is remembered.
+- **Reduced-motion users** get the reveal without fireworks.
+- **No external scripts**, only Google Fonts, so it runs under the existing Content-Security-Policy. An optional offer line is set with `INTRO_OFFER`.
+- **After Deepavali**, nothing needs to change: once `INTRO_END` passes, "/" serves the home page directly.
+
 ## Schema v25 — notifications, website editor, visitor and CRM usage insights
 
 The upgrade adds five tables: in-app notifications, website content (draft and live per section), website revisions, anonymous page views, and daily CRM activity per login. It also adds one nullable column, `it_login.last_seen_at`, and three settings (`site_tracking`, `visit_retention_days`, `notif_poll_seconds`). Nothing existing changes. This was verified on a copy (v23 → v25: all 85 existing tables unchanged).
