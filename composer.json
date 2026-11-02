@@ -1,0 +1,12 @@
+{
+    "require": {
+        "phpoffice/phpspreadsheet": "^5.1",
+        "anthropic-ai/sdk": "^0.51.0",
+        "guzzlehttp/guzzle": "^8.2"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": false
+        }
+    }
+}

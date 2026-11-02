@@ -1,0 +1,134 @@
+# ==========================================================================
+#  Adorable HRMS — web server rules (Apache / LiteSpeed, e.g. Hostinger).
+#  Upload the contents of this folder to the domain's document root.
+#  Works at the domain root and in a sub-folder (e.g. http://localhost/hrms.adorableit.com/).
+# ==========================================================================
+
+Options -Indexes -MultiViews
+DirectoryIndex index.php
+AddDefaultCharset UTF-8
+AddType application/manifest+json .webmanifest
+# Blocked files get a short page instead of the server's default one (which names server and PHP versions).
+# Missing pages get the branded error.php through the rewrite rules below.
+ErrorDocument 403 "<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>Not available</title><body style='font-family:system-ui,sans-serif;display:grid;place-items:center;min-height:90vh;color:#0f172a'><div style='text-align:center'><h1 style='font-size:56px;margin:0;color:#0077c0'>403</h1><p>This address is not available.</p><a href='/' style='color:#0077c0'>Go to the home page</a></div>"
+
+# --------------------------------------------------------------------------
+# 1. Never serve source code, dependencies, backups or hidden files.
+#    (Belt and braces: each private folder also has its own "deny all" .htaccess.)
+# --------------------------------------------------------------------------
+<FilesMatch "(?i)(\.(zip|rar|7z|tar|gz|sql|sqlite|db|bak|old|orig|swp|log|ini|env|sh|bat|ps1|lock|md|yml|yaml|xml\.dist|phar|psd)|~)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Deny from all
+    </IfModule>
+</FilesMatch>
+<FilesMatch "^(composer\.json|composer\.lock|package\.json|package-lock\.json|phpunit\.xml|web\.config|\..*)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Base path of this folder ("" at the domain root, "/hrms.adorableit.com" locally) → %{ENV:BASE}
+    RewriteCond %{REQUEST_URI}::$0 ^(/.+)/(.*)::\2$
+    RewriteRule .* - [E=BASE:%1]
+
+    # ----------------------------------------------------------------------
+    # 2. HTTPS on the live site (skipped on localhost).
+    # ----------------------------------------------------------------------
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteCond %{HTTP_HOST} !^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$ [NC]
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L,NE]
+
+    # ----------------------------------------------------------------------
+    # 3. Private areas answer 404, so their existence isn't even revealed.
+    # ----------------------------------------------------------------------
+    #    They get the branded error page (error.php sends the 404 status), which never reveals server versions.
+    RewriteRule (^|/)\.(?!well-known/) error.php [L]
+    RewriteRule ^(app|vendor|_legacy|node_modules)(/|$) error.php [L]
+    RewriteRule ^(composer\.(json|lock)|robots\.php)$ error.php [L]
+
+    # ----------------------------------------------------------------------
+    # 4. Old URLs from the previous portal and the retired apply forms.
+    # ----------------------------------------------------------------------
+    RewriteRule ^(add-member|add-patient|add-salary|adminhome|default|export_xlsx|import_xlsx|m_delete|m_edit|m_show|mcode|members-list|mupc|s_delete|s_edit|s_show|salaries|salary-list|scode|supc|u_update|userhome|login|admin-dashboard|client-dashboard)(\.php)?$ %{ENV:BASE}/sign-in [R=301,L]
+    RewriteRule ^(apply-now|job-application)(/.*)?$ %{ENV:BASE}/find-jobs [R=301,L]
+    RewriteRule ^careers/?$ %{ENV:BASE}/find-jobs [R=301,L]
+    RewriteRule ^dashboard/(accounts|attendance|candidates|clients|departments|email|employees|holidays|includes|jobs|leave_management|member|payroll|projects|reports|training)/[^/]+\.php$ %{ENV:BASE}/dashboard/$1 [R=301,L]
+
+    # ----------------------------------------------------------------------
+    # 5. Clean URLs: never show ".php".
+    #    a) Browser asked for a .php URL (GET/HEAD) → redirect to the clean one.
+    # ----------------------------------------------------------------------
+    RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+    RewriteCond %{THE_REQUEST} \s/[^?\s]*\.php[\s?]
+    RewriteRule ^(.*/)?index\.php$ %{ENV:BASE}/$1 [R=301,L,NE]
+    RewriteCond %{REQUEST_METHOD} ^(GET|HEAD)$
+    RewriteCond %{THE_REQUEST} \s/[^?\s]*\.php[\s?]
+    RewriteRule ^(.+)\.php$ %{ENV:BASE}/$1 [R=301,L,NE]
+
+    #    b) Dashboard: /dashboard/<module>[/<action>][/<id>]  →  dashboard/index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^dashboard/([a-z_]+)(?:/([a-z_]+))?(?:/([0-9]+))?/?$ dashboard/index.php?r=$1&a=$2&id=$3 [QSA,L]
+
+    #    c) Careers: /find-jobs/<slug>-<id>  and  /sitemap.xml
+    RewriteRule ^find-jobs/apply/?$ find-jobs.php?open=1 [QSA,L]
+    RewriteRule ^find-jobs/(?:[a-z0-9-]+-)?([0-9]+)/?$ find-jobs.php?job=$1 [QSA,L]
+    RewriteRule ^sitemap\.xml$ find-jobs.php?sitemap=1 [L]
+
+    #    c2) Shareable job application link: /apply/<slug>-<id>
+    RewriteRule ^apply/(?:[a-z0-9-]+-)?([0-9]+)/?$ apply.php?job=$1 [QSA,L]
+
+    #    d) Policy pages required by the payment gateway: /terms /privacy /refund-policy /delivery-policy
+    RewriteRule ^(terms|privacy|refund-policy|delivery-policy)/?$ legal.php?page=$1 [QSA,L]
+
+    #    e) Any other extensionless page that exists as a .php file.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}.php -f
+    RewriteRule ^(.+?)/?$ $1.php [L]
+
+    # ----------------------------------------------------------------------
+    # 6. Anything else that doesn't exist → branded 404 page (missing images, scripts and styles keep the plain 404).
+    # ----------------------------------------------------------------------
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} !\.(css|js|map|png|jpe?g|gif|webp|svg|ico|woff2?|ttf|eot|json|xml|txt)$ [NC]
+    RewriteRule ^ error.php [L]
+</IfModule>
+
+# Without mod_rewrite the private folders are still blocked by their own .htaccess files.
+
+# --------------------------------------------------------------------------
+# 7. Security headers (PHP pages add a Content-Security-Policy as well).
+# --------------------------------------------------------------------------
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    # Permissions-Policy and Cross-Origin-Opener-Policy come from PHP (send_security_headers) because
+    # the checkout page needs a slightly different policy for the Razorpay payment pop-ups.
+    Header always set X-Permitted-Cross-Domain-Policies "none"
+    Header always unset X-Powered-By
+    Header unset X-Powered-By
+    # Uploaded files are only ever served through the portal; static assets are cacheable.
+    <FilesMatch "\.(css|js|woff2?|ttf|eot|svg|png|jpe?g|webp|gif|ico)$">
+        Header set Cache-Control "public, max-age=2592000, immutable"
+    </FilesMatch>
+</IfModule>
+
+# --------------------------------------------------------------------------
+# 8. Performance: compress text responses.
+# --------------------------------------------------------------------------
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml application/javascript application/json application/xml image/svg+xml
+</IfModule>

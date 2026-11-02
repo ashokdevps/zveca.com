@@ -1,0 +1,12 @@
+# Public pages may be indexed; the portal itself is private.
+User-agent: *
+Allow: /$
+Allow: /find-jobs
+Disallow: /dashboard
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /logout
+Disallow: /app/
+Disallow: /vendor/
+Disallow: /_legacy/
+Sitemap: https://hrms.adorableit.com/sitemap.xml

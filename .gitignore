@@ -1,0 +1,11 @@
+# Runtime data written by the app. The live server has its own copies: never commit these,
+# or a deploy can overwrite (or fail on) the server's files.
+/app/storage/uploads/**
+/app/storage/logs/*.log
+/app/config.local.php
+# Database backups, data fingerprints and release packages (Administration → Database & Updates, app/tools/)
+/app/storage/backups/
+/app/storage/releases/
+# Database dumps (e.g. a live backup downloaded for app/tools/rehearse.php) hold personal data: never commit or package them
+*.sql
+*.sql.gz

@@ -1,0 +1,13 @@
+{
+  "name": "Adorable HRMS",
+  "short_name": "HRMS",
+  "description": "Attendance, leave, payroll, hiring and documents in one workspace.",
+  "start_url": "dashboard/",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#0077c0",
+  "icons": [
+    { "src": "dashboard/assets/images/adorableit-mark.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

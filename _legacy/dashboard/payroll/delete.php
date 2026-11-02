@@ -1,0 +1,17 @@
+<?php
+$id = $_GET['d'];
+
+$conn = mysqli_connect("127.0.0.1", "u918639175_admin", "u918639175_Admin", "u918639175_hrme2");
+if ($conn == true) {
+	$cmd = "delete from payroll where id='$id'";
+	$x = mysqli_query($conn, $cmd);
+	if ($x > 0) {
+		echo "<script>alert('Record Deleted');window.location.href='list.php';</script>";
+	} else{
+		echo "<script>alert('Record not Deleted');window.location.href='list.php';</script>";
+	}
+} else{
+	mysqli_error($conn);
+}
+
+?>
