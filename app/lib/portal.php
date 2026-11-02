@@ -292,6 +292,22 @@ function stage_pill(string $stage): string
     return '<span class="pill pill-' . $tone . '">' . e(CANDIDATE_STAGE_LABELS[$stage] ?? $stage) . '</span>';
 }
 
+/**
+ * A candidate's own applications (alias c): leaves out the central candidate record a careers profile gets without
+ * applying (talent_ensure_master: no job, source "Careers portal"), which is not an application.
+ */
+const TALENT_APPS_SQL = "(c.job_id IS NOT NULL OR c.application_type = 'general' OR COALESCE(c.source, '') <> 'Careers portal')";
+
+/** What a candidate's own application is for: the job title, "Open application" or "Position closed" (job removed). */
+function application_title(array $r): string
+{
+    if (($r['title'] ?? null) !== null) return (string) $r['title'];
+    if (($r['application_type'] ?? '') === 'general') {
+        return 'Open application' . (!empty($r['preferred_role']) ? ' · ' . $r['preferred_role'] : '');
+    }
+    return 'Position closed';
+}
+
 /** E-mails the candidate (careers-portal account) and the submitting vendor when a candidate changes stage. */
 function notify_stage_change(int $candidateId, string $stage): void
 {

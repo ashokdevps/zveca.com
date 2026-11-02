@@ -209,8 +209,8 @@ if ($a === 'job') {
 /* ───────────── Applications ───────────── */
 if ($a === 'applications') {
     authorize('candidate_applications');
-    $rows = all('SELECT c.id, c.stage, c.interview_at, c.created_at, c.updated_at, j.id job_id, j.title, j.location FROM hrm_candidates c LEFT JOIN hrm_jobs j ON j.id = c.job_id
-                 WHERE c.talent_id = ? ORDER BY c.id DESC', [$tid]);
+    $rows = all('SELECT c.id, c.stage, c.interview_at, c.created_at, c.updated_at, c.application_type, c.preferred_role, j.id job_id, j.title, j.location FROM hrm_candidates c LEFT JOIN hrm_jobs j ON j.id = c.job_id
+                 WHERE c.talent_id = ? AND ' . TALENT_APPS_SQL . ' ORDER BY c.id DESC', [$tid]);
     page_start('My Applications', ['My Applications'], can('candidate_jobs') ? '<a class="btn btn-primary" href="' . url('talent', ['a' => 'jobs']) . '"><i class="ri-search-eye-line me-1"></i>Find more jobs</a>' : '');
     if (!$rows) {
         echo '<div class="card">';
@@ -220,7 +220,7 @@ if ($a === 'applications') {
     foreach ($rows as $r): ?>
       <div class="card mb-3"><div class="card-body">
         <div class="d-flex flex-wrap gap-2 justify-content-between align-items-start mb-3">
-          <div><h6 class="fw-bold mb-0"><?= e($r['title'] ?? 'Position closed') ?></h6><small class="text-muted"><?= e($r['location'] ?? '') ?> · applied <?= fdate($r['created_at']) ?><?= $r['updated_at'] ? ' · updated ' . time_ago($r['updated_at']) : '' ?></small></div>
+          <div><h6 class="fw-bold mb-0"><?= e(application_title($r)) ?></h6><small class="text-muted"><?= $r['location'] ? e($r['location']) . ' · ' : '' ?>Applied <?= fdate($r['created_at']) ?><?= $r['updated_at'] ? ' · updated ' . time_ago($r['updated_at']) : '' ?></small></div>
           <div class="d-flex gap-2 align-items-center"><?= stage_pill($r['stage']) ?>
             <?php if (in_array($r['stage'], ['Applied', 'Shortlisted'], true)): ?><?= post_button(url('talent', ['a' => 'withdraw']), 'Withdraw', 'btn btn-sm btn-outline-danger', 'Withdraw this application? This cannot be undone.', ['id' => $r['id']]) ?><?php endif; ?></div>
         </div>

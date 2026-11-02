@@ -3,6 +3,12 @@
 What each release adds, newest first. Every release is code-only and additive: existing live data is never changed or removed (see DEPLOYMENT.md).
 Each entry lists what the upgrade adds to the database, what HR / admins should do after deploying, and the automated tests that were run.
 
+## Candidate portal fix (no database change)
+
+- **My Applications no longer shows a phantom application.** Saving a careers profile creates the person's central candidate record (no job), which the candidate's dashboard and My Applications counted as an application ("—" / "Position closed", "1 in progress"). Candidates now see only their real applications.
+- **Open applications** (made with "Open application" on the careers page) show as "Open application · <preferred role>" instead of "Position closed".
+- **Tests run:** every dashboard page opened and every non-destructive form submitted as Super Admin, HR, manager, employee and candidate on a local copy (no PHP errors); public pages and dashboards checked in headless Chrome on desktop and mobile (no script errors, broken images or sideways scrolling); `app/tools/safety-check.php`: OK.
+
 ## Schema v26: the brand is now Zveca
 
 - **New logo everywhere.** Three new images in `dashboard/assets/images/`:

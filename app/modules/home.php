@@ -195,7 +195,7 @@ if (is_vendor()) {
 if (is_candidate()) {
     $t = $u['talent'];
     [$pct, $missing] = talent_completeness($t);
-    $apps = all('SELECT c.id, c.stage, c.interview_at, c.created_at, j.title FROM hrm_candidates c LEFT JOIN hrm_jobs j ON j.id = c.job_id WHERE c.talent_id = ? ORDER BY c.id DESC', [$t['id']]);
+    $apps = all('SELECT c.id, c.stage, c.interview_at, c.created_at, c.application_type, c.preferred_role, j.title FROM hrm_candidates c LEFT JOIN hrm_jobs j ON j.id = c.job_id WHERE c.talent_id = ? AND ' . TALENT_APPS_SQL . ' ORDER BY c.id DESC', [$t['id']]);
     $active = array_filter($apps, fn($x) => !in_array($x['stage'], ['Hired', 'Rejected'], true));
     $interview = array_values(array_filter($apps, fn($x) => $x['stage'] === 'Interview' && $x['interview_at'] && $x['interview_at'] >= date('Y-m-d H:i:s')));
     $mine = array_map('strtolower', skill_tags($t['key_skills']));
@@ -240,7 +240,7 @@ if (is_candidate()) {
       </div>
       <div class="vstack gap-3">
         <div class="card"><div class="card-header-lite">My applications <a class="small fw-normal" href="<?= url('talent', ['a' => 'applications']) ?>">All →</a></div>
-          <?php foreach (array_slice($apps, 0, 5) as $x): ?><a class="list-row text-body" href="<?= url('talent', ['a' => 'applications']) ?>"><div class="grow"><div class="title"><?= e($x['title'] ?? '—') ?></div><div class="sub">Applied <?= fdate($x['created_at']) ?></div></div><?= stage_pill($x['stage']) ?></a><?php endforeach; ?>
+          <?php foreach (array_slice($apps, 0, 5) as $x): ?><a class="list-row text-body" href="<?= url('talent', ['a' => 'applications']) ?>"><div class="grow"><div class="title"><?= e(application_title($x)) ?></div><div class="sub">Applied <?= fdate($x['created_at']) ?></div></div><?= stage_pill($x['stage']) ?></a><?php endforeach; ?>
           <?php if (!$apps): ?><div class="card-body small text-muted">You haven't applied yet.</div><?php endif; ?>
         </div>
         <?php if ($missing): ?><div class="card card-body small"><div class="fw-semibold mb-1"><i class="ri-lightbulb-flash-line text-warning me-1"></i>Boost your profile</div>Add: <?= e(implode(', ', array_slice($missing, 0, 5))) ?>.</div><?php endif; ?>
