@@ -20,10 +20,8 @@ Each entry lists what the upgrade adds to the database, what HR / admins should 
   - It offers an optional update under Administration → Database & Updates: **"Rename the company to Zveca in settings, website content and own job adverts"**. Nothing changes until you apply it.
   - It updates the company name setting, the Website content (draft and live), the company's own client record and the descriptions of its own jobs. A backup is taken first.
   - Historical records stay as they are: other clients, candidates' past employers, project names, invoices, subscriptions and logs.
-- **Live database moved to `u918639175_zveca`** (user `u918639175_zveca`, same password) in `app/config.php`.
-  - Import the old `u918639175_hrms` data into it **before** uploading the files.
-  - On an empty database the first request would install a fresh, empty HRMS.
-  - The local XAMPP database name (`app/config.local.php`) is unchanged.
+- **Live database unchanged:** the site keeps using `u918639175_hrms` (user `u918639175_hrms`) in `app/config.php`.
+  - A switch to a new `u918639175_zveca` database was reverted: that database user could not connect, so every signed-in page failed with "Unexpected error".
 - **After deploying:** Super Admin → Database & Updates → apply the Zveca update.
   - Rename internal project names that start with "Adorable IT Services" if you want them changed.
 - **Tests run:**

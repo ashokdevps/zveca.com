@@ -14,8 +14,8 @@ $config = [
     'db' => [
         'host' => 'localhost',
         'port' => 3306,
-        'name' => 'u918639175_zveca',
-        'user' => 'u918639175_zveca',
+        'name' => 'u918639175_hrms',
+        'user' => 'u918639175_hrms',
         'pass' => 'Hrms@143_#5798$!!',
     ],
 
