@@ -24,6 +24,12 @@ if (config('clean_urls', true) && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET
     }
 }
 
+// Website images (Administration → Website) are public: the home page shows them to visitors who aren't signed in.
+if (($_GET['r'] ?? '') === 'file' && preg_match('#^site/[A-Za-z0-9 _().\-]+$#', (string) ($_GET['f'] ?? ''))) {
+    require APP_DIR . '/modules/file.php';
+    exit;
+}
+
 require_login();
 crm_touch(); // CRM usage for the Super Admin dashboard (throttled)
 

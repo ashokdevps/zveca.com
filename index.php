@@ -5,6 +5,7 @@
  * Only helpers.php + db.php are loaded (fast). It peeks at the session to switch "Login" / "Go to Dashboard"
  * and, for a signed-in Super Admin with ?preview=1, shows unpublished changes.
  */
+require __DIR__ . '/launch.php'; // Deepavali launch intro: shows it (and stops) on a first visit during the campaign, otherwise returns
 define('APP_DIR', __DIR__ . '/app');
 define('PUBLIC_DIR', __DIR__);
 require APP_DIR . '/lib/helpers.php'; // functions only
@@ -70,6 +71,18 @@ $hidden = array_flip($S['layout']['hidden']);
   <link rel="stylesheet" href="<?= v('dashboard/assets/fonts/remix/remixicon.css') ?>">
   <link rel="stylesheet" href="<?= v('dashboard/assets/css/landing.css') ?>">
   <link rel="stylesheet" href="<?= v('dashboard/assets/css/home.css') ?>">
+  <?php // Arriving from the launch intro (launch.php): the page opens out of golden light, then fireworks + a welcome toast. ?>
+  <script>try { var zl = +sessionStorage.getItem('zvLaunch'); sessionStorage.removeItem('zvLaunch'); if (zl && Date.now() - zl < 15000) document.documentElement.classList.add('zv-launch'); } catch (e) {}</script>
+  <style>
+    /* body only fades (a transform or filter on body would pull the fixed fireworks canvas and toast off-screen) */
+    html.zv-launch body { animation: zvFade .9s ease-out backwards; }
+    html.zv-launch #main, html.zv-launch .lp-header { animation: zvOpen 1.3s cubic-bezier(.16, 1, .3, 1) backwards; }
+    @keyframes zvFade { from { opacity: 0; } }
+    @keyframes zvOpen { from { transform: scale(1.05); filter: blur(10px); } }
+    html.zv-launch::after { content: ''; position: fixed; inset: 0; z-index: 2147482000; pointer-events: none; background: radial-gradient(circle at 50% 30%, #fff 0%, #fff3d6 40%, #ffd58a 100%); animation: zvFlash 1.3s ease-out forwards; }
+    @keyframes zvFlash { from { opacity: 1; } to { opacity: 0; visibility: hidden; } }
+    @media (prefers-reduced-motion: reduce) { html.zv-launch body, html.zv-launch #main, html.zv-launch .lp-header { animation: none; } html.zv-launch::after { display: none; } }
+  </style>
   <script type="application/ld+json"><?= json_encode(['@context' => 'https://schema.org', '@type' => 'SoftwareApplication', 'name' => $g['product'], 'applicationCategory' => 'BusinessApplication',
       'operatingSystem' => 'Web', 'description' => $S['seo']['description'], 'publisher' => ['@type' => 'Organization', 'name' => $g['company'], 'url' => $g['site_url']]], JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
 </head>
@@ -328,6 +341,14 @@ case 'hero': ?>
 </div>
 
 <?= pricing_script() ?>
+<script>
+  if (document.documentElement.classList.contains('zv-launch')) {
+    var zs = document.createElement('script');
+    zs.src = <?= json_encode(v('dashboard/assets/js/zv-fireworks.js')) ?>;
+    zs.onload = function () { ZVF.celebrate(); };
+    document.body.appendChild(zs);
+  }
+</script>
 <script>
   (function () {
     var b = document.getElementById('lpBurger'), m = document.getElementById('lpMenu'), h = document.querySelector('.lp-header');

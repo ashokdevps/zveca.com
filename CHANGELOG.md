@@ -5,16 +5,20 @@ Each entry lists what the upgrade adds to the database, what HR / admins should 
 
 ## Deepavali launch intro (no database change)
 
-- **"/" now opens with a launch intro** (`index.php`): a countdown, a rocket, a BOOM with fireworks, then the ZVECA wordmark, with lanterns and diyas around it. After 7 seconds (or on *Enter ZVECA*, *Skip intro*, Esc) it moves to the home page.
-- **The home page moved to `/home`** (`index2.php`). Old `/index2` and `/index2.php` links redirect there with a 301.
-- **The intro is shown only when it should be:**
-  - between `INTRO_START` and `INTRO_END` (India time, set at the top of `index.php`; currently 25 Oct to 16 Nov 2026);
+- **Click-to-launch intro** (`launch.php`):
+  - The visitor sees a night sky with lanterns, diyas and a glowing **Launch ZVECA** button (or presses Enter).
+  - Pressing it plays a 3-2-1 countdown. A rocket lifts off from the button, then comes a **BOOM**: flash, shockwave, screen shake and a fireworks show, with firecracker sound.
+  - Then the ZVECA wordmark is revealed. About 5 seconds later the page dissolves into golden light.
+- **The website opens with a boom.** The home page (`index.php`) fades in out of that light and fires its own fireworks, then shows a "Shubh Deepavali! Welcome to ZVECA" toast. It plays only right after the intro, never on a normal visit or a reload.
+- **The home page stays at "/"** (`index.php`). It includes `launch.php` first, which shows the intro only:
+  - between `INTRO_START` and `INTRO_END` (India time, top of `launch.php`; currently 25 Oct to 16 Nov 2026);
   - once per browser every 12 hours (cookie `zv_intro`).
-  - Search engines, link-preview bots (WhatsApp, LinkedIn…), Lighthouse and other bots always get the home page at "/", so SEO and share previews are unchanged.
-  - `/?intro=1` previews the intro at any time, and `/?intro=0` skips it.
-- **Sound** is off until the visitor turns it on (browsers block audio before a tap). The choice is remembered.
-- **Reduced-motion users** get the reveal without fireworks.
-- **No external scripts**, only Google Fonts, so it runs under the existing Content-Security-Policy. An optional offer line is set with `INTRO_OFFER`.
+  - Search engines, link-preview bots (WhatsApp, LinkedIn…), Lighthouse and other bots always get the home page, so SEO and share previews are unchanged.
+  - `/launch` previews the intro at any time, and `/?intro=0` skips it. `/home` and `/index2` redirect to "/".
+- **Sound** is on by default. The launch click is the gesture browsers need before they play audio. The toggle is remembered.
+- **Reduced-motion users** get the reveal without fireworks or zoom.
+- **One shared, dependency-free engine:** `dashboard/assets/js/zv-fireworks.js` (canvas fireworks and synthesised sound). The pages load no external scripts, only Google Fonts, so they work under the existing Content-Security-Policy. An optional offer line is set with `INTRO_OFFER`.
+- **Fix:** website images uploaded in Administration → Website (`dashboard/file?f=site/…`, for example the header logo) were behind the login, so visitors saw a broken logo. They are now public. Every other upload folder still requires sign-in.
 - **After Deepavali**, nothing needs to change: once `INTRO_END` passes, "/" serves the home page directly.
 
 ## Schema v25 — notifications, website editor, visitor and CRM usage insights
