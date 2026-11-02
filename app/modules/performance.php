@@ -605,8 +605,13 @@ if ($a === 'goal_form') {
     $empId = $g ? (int) $g['employee_id'] : (int_input('employee_id') ?: (int) $me);
     if ($empId) perf_emp($empId);
     if ($g && !perf_can_edit_goal($g)) authorize('__never__');
+    if (!$g && !$empId && !$canManage) {
+        // A login without an employee record has nobody to set goals for (the save would be refused).
+        flash('warning', 'Your login is not linked to an employee record yet. Please contact HR.');
+        redirect(url('performance', ['a' => 'goals']));
+    }
     $people = perf_scope_ids();
-    $empOpts = $people === null ? employee_options() : array_intersect_key(employee_options(), array_flip($canManage ? $people : [$me]));
+    $empOpts = $people === null ? employee_options() : array_intersect_key(employee_options(), array_flip($canManage ? $people : array_filter([(int) $me])));
     $cycles = [];
     foreach (all("SELECT id, name FROM hrm_review_cycles WHERE status <> 'Closed' OR id = ? ORDER BY period_end DESC", [$g['cycle_id'] ?? 0]) as $c) $cycles[$c['id']] = $c['name'];
     $v = fn($k, $def = '') => old($k, $g[$k] ?? $def);
