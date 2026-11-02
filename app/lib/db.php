@@ -17,9 +17,14 @@ function db(): PDO
                 PDO::ATTR_EMULATE_PREPARES   => false,
             ]);
         } catch (PDOException $ex) {
-            $hint = str_contains($ex->getMessage(), '2002') ? 'MySQL is not running — start it from the XAMPP Control Panel.'
-                : (str_contains($ex->getMessage(), '1049') ? "Database '{$c['name']}' does not exist — create it in phpMyAdmin."
-                : 'Check the database name, user and password in app/config.php' . (config('debug') ? ' (local: app/config.local.php)' : '') . '.');
+            $code = (int) ($ex->errorInfo[1] ?? $ex->getCode());
+            $hint = match ($code) {
+                2002    => "MySQL is not reachable at '{$c['host']}' — start it from the XAMPP Control Panel (live: check the host in the hosting panel).",
+                1049    => "Database '{$c['name']}' does not exist — create it in phpMyAdmin (live: hosting panel → Databases).",
+                1045    => "Access denied for user '{$c['user']}' — the password is wrong or the user does not exist. Each database user has its own password (live: hosting panel → Databases → change password).",
+                1044    => "User '{$c['user']}' has no access to database '{$c['name']}' — link the user to the database with all privileges (live: hosting panel → Databases).",
+                default => 'Check the database name, user and password in app/config.php' . (config('debug') ? ' (local: app/config.local.php)' : '') . '.',
+            } . " [MySQL $code]";
             throw new RuntimeException('Cannot connect to the database. ' . $hint, 0, $ex);
         }
         $pdo->exec("SET time_zone = '" . date('P') . "'");
