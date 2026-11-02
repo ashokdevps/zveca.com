@@ -11,7 +11,7 @@ require __DIR__ . '/app/bootstrap.php';
 if (user()) {
     redirect(is_client() ? url('services') : url());
 }
-$company = setting('company_name', 'Adorable IT Services');
+$company = setting('company_name', 'Zveca');
 if (setting('client_signup', '1') !== '1' || !plan_allows('manage_engagements')) {
     flash('info', 'Online client registration is closed. Please contact us at ' . e(setting('company_email')) . '.');
     redirect(root_url('sign-in.php'));
@@ -148,7 +148,7 @@ $o = fn($k, $def = '') => e($_SESSION['_old'][$k] ?? $def);
   <meta property="og:title" content="Register your company · <?= e($company) ?>">
   <meta property="og:type" content="website">
   <meta name="theme-color" content="#0077c0">
-  <link rel="icon" type="image/png" href="<?= asset('images/adorableit-mark.png') ?>">
+  <link rel="icon" type="image/png" href="<?= asset('images/zveca-mark.png') ?>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= asset('css/bootstrap.min.css') ?>">
   <link rel="stylesheet" href="<?= asset('fonts/remix/remixicon.css') ?>">
@@ -158,7 +158,7 @@ $o = fn($k, $def = '') => e($_SESSION['_old'][$k] ?? $def);
 <body class="auth-body">
 <div class="auth">
   <section class="auth-hero">
-    <a href="<?= root_url('index.php') ?>" class="auth-brand"><img src="<?= asset('images/adorableIT_dark_logo.png') ?>" alt="<?= e($company) ?>"></a>
+    <a href="<?= root_url('index.php') ?>" class="auth-brand"><img src="<?= asset('images/zveca-logo.png') ?>" alt="<?= e($company) ?>"></a>
     <div class="auth-copy">
       <h1>HR &amp; IT services, managed in one portal.</h1>
       <p>Register your company once. Request recruitment or IT services, approve proposals, e-sign agreements and track delivery and billing online.</p>
@@ -174,7 +174,7 @@ $o = fn($k, $def = '') => e($_SESSION['_old'][$k] ?? $def);
   <section class="auth-panel">
     <div class="auth-card wide">
       <div class="auth-top">
-        <a class="auth-logo-sm" href="<?= root_url('index.php') ?>"><img src="<?= asset('images/adorableIT_dark_logo.png') ?>" alt="<?= e($company) ?>"></a>
+        <a class="auth-logo-sm" href="<?= root_url('index.php') ?>"><img src="<?= asset('images/zveca-logo.png') ?>" alt="<?= e($company) ?>"></a>
         <a class="small text-muted" href="<?= root_url('sign-in.php') ?>"><i class="ri-login-box-line"></i> Already registered? Sign in</a>
       </div>
       <?php foreach (take_flashes() as [$t, $m]): ?><div class="alert alert-<?= e($t) ?>"><?= $m ?></div><?php endforeach; ?>

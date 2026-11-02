@@ -364,10 +364,10 @@ function subscription_mark_paid(array $sub, string $paymentId, string $method, s
     q('UPDATE hrm_subscriptions SET invoice_no = ? WHERE id = ? AND invoice_no IS NULL', [next_invoice_no(), $sub['id']]);
     $sub = one('SELECT * FROM hrm_subscriptions WHERE id = ?', [$sub['id']]);
     log_activity('subscription paid', 'Subscription', (int) $sub['id'], "{$sub['order_no']} · " . inr((float) $sub['total']) . " · via $source");
-    $company = setting('company_name', 'Adorable IT Services');
+    $company = setting('company_name', 'Zveca');
     $plan = PLANS[$sub['plan']]['name'] ?? $sub['plan'];
     send_mail($sub['email'], "Payment received — {$plan} plan ({$sub['order_no']})",
-        "Hi {$sub['contact_name']},\n\nThank you! We received " . inr((float) $sub['total'], true) . " for Adorable HRMS {$plan} — {$sub['users']} users, billed " . ($sub['cycle'] === 'annual' ? 'annually' : 'monthly') . ".\n\n"
+        "Hi {$sub['contact_name']},\n\nThank you! We received " . inr((float) $sub['total'], true) . " for Zveca HRMS {$plan} — {$sub['users']} users, billed " . ($sub['cycle'] === 'annual' ? 'annually' : 'monthly') . ".\n\n"
         . "Order: {$sub['order_no']}\nInvoice: {$sub['invoice_no']}\nPeriod: " . fdate($sub['period_start']) . ' – ' . fdate($sub['period_end']) . "\n\n"
         . "Download your GST invoice: " . order_url($sub, ['invoice' => 1], true) . "\n\nOur onboarding team will set up your workspace and send the login details within one business day.\n\n— $company");
     if ($sales = setting('sales_email') ?: setting('company_email')) {
@@ -415,10 +415,10 @@ function site_page_start(string $title, string $description, string $active = ''
   <meta property="og:type" content="website">
   <meta property="og:title" content="<?= e($title) ?>">
   <meta property="og:description" content="<?= e($description) ?>">
-  <meta property="og:image" content="<?= e(rtrim(site_origin(), '/') . root_url('dashboard/assets/images/adorableIT_dark_logo.png')) ?>">
+  <meta property="og:image" content="<?= e(rtrim(site_origin(), '/') . root_url('dashboard/assets/images/zveca-logo.png')) ?>">
   <meta name="twitter:card" content="summary">
   <meta name="theme-color" content="#07142a">
-  <link rel="icon" type="image/png" href="<?= e($asset('dashboard/assets/images/adorableit-mark.png')) ?>">
+  <link rel="icon" type="image/png" href="<?= e($asset('dashboard/assets/images/zveca-mark.png')) ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= e($asset('dashboard/assets/css/bootstrap.min.css')) ?>">
@@ -431,7 +431,7 @@ function site_page_start(string $title, string $description, string $active = ''
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="lp-header scrolled" id="top">
   <div class="container lp-nav">
-    <a class="lp-logo" href="<?= e(root_url('')) ?>"><img src="<?= e($asset('dashboard/assets/images/adorableIT_dark_logo.png')) ?>" alt="Adorable IT Services"></a>
+    <a class="lp-logo" href="<?= e(root_url('')) ?>"><img src="<?= e($asset('dashboard/assets/images/zveca-logo.png')) ?>" alt="Zveca"></a>
     <nav class="lp-menu" id="lpMenu" aria-label="Main">
       <?php foreach ($nav as $label => $href): ?><a href="<?= e($href) ?>"<?= $label === $active ? ' class="active" aria-current="page"' : '' ?>><?= $label ?></a><?php endforeach; ?>
     </nav>
@@ -459,7 +459,7 @@ function site_page_end(string $scripts = ''): void
   <div class="container">
     <div class="hx-legal-links"><?= site_footer_links() ?><a href="<?= e(root_url('find-jobs')) ?>">Careers</a><a href="<?= e(root_url('')) ?>#contact">Contact</a></div>
     <div class="lp-footer-bottom">
-      <span>© <?= date('Y') ?> <?= e(pricing_setting('company_name', 'Adorable IT Services')) ?>. All rights reserved.</span>
+      <span>© <?= date('Y') ?> <?= e(pricing_setting('company_name', 'Zveca')) ?>. All rights reserved.</span>
       <span>1st Floor, B-135, B Block, Sector 2, Noida, UP 201301 · <a href="mailto:info@adorableit.com">info@adorableit.com</a> · <a href="tel:+919871864942">+91-9871864942</a></span>
     </div>
   </div>

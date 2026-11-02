@@ -3,6 +3,31 @@
 What each release adds, newest first. Every release is code-only and additive: existing live data is never changed or removed (see DEPLOYMENT.md).
 Each entry lists what the upgrade adds to the database, what HR / admins should do after deploying, and the automated tests that were run.
 
+## Schema v26: the brand is now Zveca
+
+- **New logo everywhere.** Three new images in `dashboard/assets/images/`:
+  - `zveca-logo.png`: the wordmark for light backgrounds, with a transparent background.
+  - `zveca-logo-light.png`: the wordmark for dark backgrounds.
+  - `zveca-mark.png`: the "Z" app icon, 512 px.
+- **Where the logo appears.** The website, sign-in / sign-up / onboarding pages, the dashboard sidebar, the favicon, the home-screen icon (manifest), the 404 page, invoices, payslips, offer letters and review letters.
+  - A logo uploaded under Administration → Website still takes priority.
+- **Built-in texts.** "Adorable IT Services", "Adorable HRMS" and "Adorable IT" became "Zveca" / "Zveca HRMS" in:
+  - page titles, e-mails, WhatsApp messages and legal pages
+  - the default settings, the website defaults, `robots.txt` (sitemap now at zveca.com) and the careers-page structured data
+  - The footer "Company" links now go to sections of the home page instead of adorableit.com.
+- **Unchanged:** e-mail addresses (`info@` / `hr@` / `noreply@adorableit.com`), phone numbers, the office address and social media links. Change them under Settings and Administration → Website once Zveca addresses exist.
+- **Database:** no table change. The upgrade changes no stored value.
+  - It offers an optional update under Administration → Database & Updates: **"Rename the company to Zveca in settings, website content and own job adverts"**. Nothing changes until you apply it.
+  - It updates the company name setting, the Website content (draft and live), the company's own client record and the descriptions of its own jobs. A backup is taken first.
+  - Historical records stay as they are: other clients, candidates' past employers, project names, invoices, subscriptions and logs.
+- **After deploying:** Super Admin → Database & Updates → apply the Zveca update.
+  - Rename internal project names that start with "Adorable IT Services" if you want them changed.
+- **Tests run:**
+  - `app/tools/safety-check.php`: OK.
+  - `app/tools/rehearse.php` on a v25 copy: v25 → v26 left every existing record unchanged; the update is offered with 11 records.
+  - Every dashboard module was opened as Super Admin: no PHP errors.
+  - The home, pricing, careers, sign-in and 404 pages and the dashboard were checked in a headless browser on desktop and mobile: no script errors.
+
 ## Deepavali launch intro (no database change)
 
 - **Click-to-launch intro** (`launch.php`):

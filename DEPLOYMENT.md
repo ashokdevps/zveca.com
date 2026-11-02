@@ -1,4 +1,4 @@
-# Deploying Adorable HRMS without touching live data
+# Deploying Zveca HRMS without touching live data
 
 A release changes **code only** (design and features). Existing live database records and uploaded files are never overwritten, changed or removed. New features arrive as new tables, new columns and new settings, which the live site adds to its own database on the first request after the deploy.
 

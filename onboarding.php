@@ -8,7 +8,7 @@
  */
 require __DIR__ . '/app/bootstrap.php';
 
-$company = setting('company_name', 'Adorable IT Services');
+$company = setting('company_name', 'Zveca');
 $error = null;
 $notice = null;
 
@@ -140,7 +140,7 @@ $first = $o ? explode(' ', $o['full_name'])[0] : '';
   <meta name="robots" content="noindex, nofollow">
   <meta name="referrer" content="no-referrer">
   <title>Your offer · <?= e($company) ?></title>
-  <link rel="icon" type="image/png" href="<?= asset('images/adorableit-mark.png') ?>">
+  <link rel="icon" type="image/png" href="<?= asset('images/zveca-mark.png') ?>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= asset('css/bootstrap.min.css') ?>">
   <link rel="stylesheet" href="<?= asset('fonts/remix/remixicon.css') ?>">
@@ -149,7 +149,7 @@ $first = $o ? explode(' ', $o['full_name'])[0] : '';
 <body class="auth-body">
 <div class="auth">
   <section class="auth-hero">
-    <a href="<?= root_url('index.php') ?>" class="auth-brand"><img src="<?= asset('images/adorableIT_dark_logo.png') ?>" alt="<?= e($company) ?>"></a>
+    <a href="<?= root_url('index.php') ?>" class="auth-brand"><img src="<?= asset('images/zveca-logo.png') ?>" alt="<?= e($company) ?>"></a>
     <div class="auth-copy">
       <h1><?= $o ? 'Congratulations, ' . e($first) . '!' : 'Your onboarding' ?></h1>
       <p><?= $o ? 'An offer from ' . e($company) . ' is waiting for you. Complete your joining formalities online, in one place.' : 'Joining formalities at ' . e($company) . ', done online.' ?></p>
@@ -165,7 +165,7 @@ $first = $o ? explode(' ', $o['full_name'])[0] : '';
   <section class="auth-panel">
     <div class="auth-card">
       <div class="auth-top">
-        <a class="auth-logo-sm" href="<?= root_url('index.php') ?>"><img src="<?= asset('images/adorableIT_dark_logo.png') ?>" alt="<?= e($company) ?>"></a>
+        <a class="auth-logo-sm" href="<?= root_url('index.php') ?>"><img src="<?= asset('images/zveca-logo.png') ?>" alt="<?= e($company) ?>"></a>
         <a class="small text-muted" href="<?= root_url('sign-in.php') ?>"><i class="ri-login-box-line"></i> Sign in</a>
       </div>
       <?php foreach (take_flashes() as [$t, $m]): ?><div class="alert alert-<?= e($t) ?>"><?= $m ?></div><?php endforeach; ?>

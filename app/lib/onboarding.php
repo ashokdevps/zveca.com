@@ -284,7 +284,7 @@ function onb_placeholders(array $o): array
         'joining_date' => fdate($o['joining_date'], 'd F Y'), 'offer_expiry' => fdate($o['offer_expires'], 'd F Y'),
         'probation_months' => (string) probation_months($track), 'notice_period' => setting('notice_period_days', '30') . ' days',
         'offer_ref' => $o['offer_ref'] ?: 'DRAFT', 'today' => fdate(date('Y-m-d'), 'd F Y'), 'offer_date' => fdate($o['approved_at'] ?: date('Y-m-d'), 'd F Y'),
-        'company_name' => setting('company_name', 'Adorable IT Services'), 'company_address' => (string) setting('company_address', ''),
+        'company_name' => setting('company_name', 'Zveca'), 'company_address' => (string) setting('company_address', ''),
         'company_email' => (string) setting('company_email', ''), 'hr_name' => setting('onboarding_signatory', 'Human Resources'),
     ];
 }
@@ -359,7 +359,7 @@ function onb_letter(string $title, string $bodyHtml, array $o, string $footer = 
 {
     $logo = setting('company_logo');
     return '<article class="onb-letter letter"><header class="onb-letterhead">'
-        . '<img src="' . e($logo ? file_url($logo) : asset('images/adorableIT_dark_logo.png')) . '" alt="">'
+        . '<img src="' . e($logo ? file_url($logo) : asset('images/zveca-logo.png')) . '" alt="">'
         . '<div><strong>' . e(setting('company_name')) . '</strong><small>' . nl2br(e((string) setting('company_address', ''))) . '</small></div>'
         . '<div class="text-end small"><span class="text-muted">Ref</span> ' . e($o['offer_ref'] ?: 'DRAFT') . '</div></header>'
         . '<h2 class="onb-letter-title">' . e($title) . '</h2><div class="onb-letter-body policy-body">' . $bodyHtml . '</div>' . $footer . '</article>';

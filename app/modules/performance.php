@@ -903,7 +903,7 @@ if ($a === 'letter') {
     <div class="card payslip letter"><div class="card-body p-4 p-md-5">
       <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-4 pb-3 border-bottom">
         <div class="d-flex gap-3 align-items-center">
-          <img src="<?= e($logo ? file_url($logo) : asset('images/adorableIT_dark_logo.png')) ?>" alt="" style="height:52px">
+          <img src="<?= e($logo ? file_url($logo) : asset('images/zveca-logo.png')) ?>" alt="" style="height:52px">
           <div><h4 class="fw-bold m-0"><?= e(setting('company_name')) ?></h4><div class="small text-muted"><?= nl2br(e(setting('company_address', ''))) ?></div></div>
         </div>
         <div class="text-end small"><div class="text-muted">Date</div><div class="fw-semibold"><?= fdate($date, 'd F Y') ?></div><div class="text-muted mt-1">Ref: CONF/<?= e($e['emp_code']) ?>/<?= date('Y', strtotime($date)) ?></div></div>

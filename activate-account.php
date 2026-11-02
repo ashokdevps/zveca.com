@@ -6,7 +6,7 @@
  */
 require __DIR__ . '/app/bootstrap.php';
 
-$company = setting('company_name', 'Adorable IT Services');
+$company = setting('company_name', 'Zveca');
 $token = (string) ($_GET['t'] ?? $_POST['t'] ?? '');
 $login = login_by_activation($token);
 $errors = [];
@@ -40,7 +40,7 @@ if ($login && is_post()) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <title>Activate your account · <?= e($company) ?> HRMS</title>
-  <link rel="icon" type="image/png" href="<?= asset('images/adorableit-mark.png') ?>">
+  <link rel="icon" type="image/png" href="<?= asset('images/zveca-mark.png') ?>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= asset('css/bootstrap.min.css') ?>">
   <link rel="stylesheet" href="<?= asset('fonts/remix/remixicon.css') ?>">
@@ -49,7 +49,7 @@ if ($login && is_post()) {
 <body class="auth-body">
 <div class="auth">
   <section class="auth-hero">
-    <a href="<?= root_url('index.php') ?>" class="auth-brand"><img src="<?= asset('images/adorableIT_dark_logo.png') ?>" alt="<?= e($company) ?>"></a>
+    <a href="<?= root_url('index.php') ?>" class="auth-brand"><img src="<?= asset('images/zveca-logo.png') ?>" alt="<?= e($company) ?>"></a>
     <div class="auth-copy">
       <h1>Welcome to <?= e($company) ?>.</h1>
       <p>Set your password to open your employee account.</p>
@@ -63,7 +63,7 @@ if ($login && is_post()) {
   </section>
   <section class="auth-panel">
     <div class="auth-card">
-      <div class="auth-top"><a class="auth-logo-sm" href="<?= root_url('index.php') ?>"><img src="<?= asset('images/adorableIT_dark_logo.png') ?>" alt="<?= e($company) ?>"></a></div>
+      <div class="auth-top"><a class="auth-logo-sm" href="<?= root_url('index.php') ?>"><img src="<?= asset('images/zveca-logo.png') ?>" alt="<?= e($company) ?>"></a></div>
       <?php if (!$login): ?>
         <h2>Link expired or already used</h2>
         <p class="text-muted">For your security this link works once and only for a limited time. Ask HR to send a new one, or use "Forgot password" on the sign-in page to get a code by e-mail.</p>

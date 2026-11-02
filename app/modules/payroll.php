@@ -71,7 +71,7 @@ if ($a === 'slip') {
     <div class="card payslip"><div class="card-body p-4 p-md-5">
       <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-4 pb-3 border-bottom">
         <div class="d-flex gap-3 align-items-center">
-          <?php if ($logo): ?><img src="<?= e(file_url($logo)) ?>" alt="" style="height:52px"><?php else: ?><img src="<?= asset('images/adorableIT_dark_logo.png') ?>" alt="" style="height:52px"><?php endif; ?>
+          <?php if ($logo): ?><img src="<?= e(file_url($logo)) ?>" alt="" style="height:52px"><?php else: ?><img src="<?= asset('images/zveca-logo.png') ?>" alt="" style="height:52px"><?php endif; ?>
           <div><h4 class="fw-bold m-0"><?= e(setting('company_name')) ?></h4><div class="small text-muted"><?= nl2br(e(setting('company_address', ''))) ?></div></div>
         </div>
         <div class="text-end"><div class="text-muted small text-uppercase fw-semibold">Payslip</div><div class="fs-5 fw-bold"><?= $monthLabel ?></div><?= badge($p['run_status']) ?></div>

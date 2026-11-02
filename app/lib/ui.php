@@ -227,9 +227,9 @@ function page_start(string $title, array $crumbs = [], string $actions = ''): vo
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= e($title) ?> · <?= e($company) ?> HRMS</title>
-  <link rel="icon" type="image/png" href="<?= asset('images/adorableit-mark.png') ?>">
+  <link rel="icon" type="image/png" href="<?= asset('images/zveca-mark.png') ?>">
   <link rel="manifest" href="<?= root_url('manifest.webmanifest') ?>">
-  <link rel="apple-touch-icon" href="<?= asset('images/adorableit-mark.png') ?>">
+  <link rel="apple-touch-icon" href="<?= asset('images/zveca-mark.png') ?>">
   <meta name="theme-color" content="#0077c0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -251,7 +251,7 @@ function page_start(string $title, array $crumbs = [], string $actions = ''): vo
         <?php if ($logo): ?>
           <img src="<?= e(file_url($logo)) ?>" alt="" class="brand-logo">
         <?php else: ?>
-          <span class="brand-mark"><img src="<?= asset('images/adorableit-mark.png') ?>" alt=""></span>
+          <span class="brand-mark"><img src="<?= asset('images/zveca-mark.png') ?>" alt=""></span>
         <?php endif; ?>
         <span class="brand-text"><span class="bn"><?= e($company) ?></span><small>People Platform</small></span>
       </a>
@@ -443,7 +443,7 @@ function page_end(array $scripts = []): void
 {
     ?>
     </main><?php unset($_SESSION['_old']); /* repopulation data is only for the page just rendered */ ?>
-    <footer class="foot"><span>© <?= date('Y') ?> <?= e(setting('company_name', 'Adorable IT Services')) ?> · HRMS</span>
+    <footer class="foot"><span>© <?= date('Y') ?> <?= e(setting('company_name', 'Zveca')) ?> · HRMS</span>
       <span class="d-none d-md-inline">Press <kbd>Ctrl</kbd> + <kbd>K</kbd> for quick navigation</span></footer>
   </div>
 </div>
@@ -455,8 +455,8 @@ $wa = preg_replace('/\D+/', '', (string) setting('whatsapp_number', '91987186494
 $me = user();
 $org = $me['client']['name'] ?? ($me['vendor']['name'] ?? null);
 $waText = $org
-    ? 'Hello ' . setting('company_name', 'Adorable IT') . ', this is ' . $me['display_name'] . ' from ' . $org . '. I need help with: '
-    : 'Hello ' . setting('company_name', 'Adorable IT') . (is_candidate() ? ' Careers' : ' HR') . ', this is ' . ($me['display_name'] ?? '')
+    ? 'Hello ' . setting('company_name', 'Zveca') . ', this is ' . $me['display_name'] . ' from ' . $org . '. I need help with: '
+    : 'Hello ' . setting('company_name', 'Zveca') . (is_candidate() ? ' Careers' : ' HR') . ', this is ' . ($me['display_name'] ?? '')
       . (!empty($me['employee']['emp_code']) ? ' (' . $me['employee']['emp_code'] . ')' : '') . '. I need help with: ';
 $ai = $me && assistant_enabled();
 ?>

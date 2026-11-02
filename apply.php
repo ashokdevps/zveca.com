@@ -21,7 +21,7 @@ const APPLY_NOTICE = ['Immediate', '15 days', '30 days', '45 days', '60 days', '
 const APPLY_PARSE_PER_HOUR = 40;  // resume reads per network per hour
 const APPLY_TMP_HOURS = 6;        // unsent parsed resumes are deleted after this
 
-$company = setting('company_name', 'Adorable IT Services');
+$company = setting('company_name', 'Zveca');
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https' ? 'https' : 'http';
 $origin = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 $asset = fn(string $p) => root_url($p) . '?v=' . (is_file(__DIR__ . '/' . $p) ? filemtime(__DIR__ . '/' . $p) : 1);
@@ -207,10 +207,10 @@ header('X-Robots-Tag: ' . ($job && $job['visibility'] === 'Public' && !$done ? '
   <meta property="og:title" content="<?= e("We're hiring: {$job['title']}") ?>">
   <meta property="og:description" content="<?= e($desc) ?>">
   <meta property="og:url" content="<?= e($shareLink) ?>">
-  <meta property="og:image" content="<?= e($origin . root_url('dashboard/assets/images/adorableIT_dark_logo.png')) ?>">
+  <meta property="og:image" content="<?= e($origin . root_url('dashboard/assets/images/zveca-logo.png')) ?>">
   <meta name="twitter:card" content="summary">
   <?php endif; ?>
-  <link rel="icon" type="image/png" href="<?= $asset('dashboard/assets/images/adorableit-mark.png') ?>">
+  <link rel="icon" type="image/png" href="<?= $asset('dashboard/assets/images/zveca-mark.png') ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= $asset('dashboard/assets/css/bootstrap.min.css') ?>">
@@ -223,7 +223,7 @@ header('X-Robots-Tag: ' . ($job && $job['visibility'] === 'Public' && !$done ? '
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="lp-header scrolled" id="top">
   <div class="container lp-nav">
-    <a class="lp-logo" href="<?= e(root_url('')) ?>"><img src="<?= $asset('dashboard/assets/images/adorableIT_dark_logo.png') ?>" alt="<?= e($company) ?>"></a>
+    <a class="lp-logo" href="<?= e(root_url('')) ?>"><img src="<?= $asset('dashboard/assets/images/zveca-logo.png') ?>" alt="<?= e($company) ?>"></a>
     <div class="lp-actions">
       <a class="lp-btn lp-btn-ghost" href="<?= e(root_url('find-jobs')) ?>"><i class="ri-briefcase-4-line"></i> <span class="d-none d-sm-inline">All open jobs</span></a>
     </div>

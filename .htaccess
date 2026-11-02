@@ -1,7 +1,7 @@
 # ==========================================================================
-#  Adorable HRMS — web server rules (Apache / LiteSpeed, e.g. Hostinger).
+#  Zveca HRMS — web server rules (Apache / LiteSpeed, e.g. Hostinger).
 #  Upload the contents of this folder to the domain's document root.
-#  Works at the domain root and in a sub-folder (e.g. http://localhost/hrms.adorableit.com/).
+#  Works at the domain root and in a sub-folder (e.g. http://localhost/zveca.com/).
 # ==========================================================================
 
 Options -Indexes -MultiViews
@@ -36,7 +36,7 @@ ErrorDocument 403 "<!doctype html><meta charset=utf-8><meta name=viewport conten
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Base path of this folder ("" at the domain root, "/hrms.adorableit.com" locally) → %{ENV:BASE}
+    # Base path of this folder ("" at the domain root, "/zveca.com" locally) → %{ENV:BASE}
     RewriteCond %{REQUEST_URI}::$0 ^(/.+)/(.*)::\2$
     RewriteRule .* - [E=BASE:%1]
 

@@ -1,5 +1,5 @@
 {
-  "name": "Adorable HRMS",
+  "name": "Zveca HRMS",
   "short_name": "HRMS",
   "description": "Attendance, leave, payroll, hiring and documents in one workspace.",
   "start_url": "dashboard/",
@@ -8,6 +8,6 @@
   "background_color": "#f4f7fb",
   "theme_color": "#0077c0",
   "icons": [
-    { "src": "dashboard/assets/images/adorableit-mark.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    { "src": "dashboard/assets/images/zveca-mark.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
   ]
 }

@@ -1,4 +1,4 @@
-/* Adorable HRMS — progressive-enhancement layer (no framework). */
+/* Zveca HRMS — progressive-enhancement layer (no framework). */
 (function () {
   'use strict';
   var root = document.documentElement;

@@ -534,7 +534,7 @@ function assistant_enabled(): bool
 /** Stable, permission-specific instructions + guide (cacheable), then the per-user context. */
 function assistant_system(): array
 {
-    $company = setting('company_name', 'Adorable IT Services');
+    $company = setting('company_name', 'Zveca');
     $guide = implode("\n\n", array_map(fn($g) => "## {$g['title']}\n{$g['body']}\nLink: " . url($g['link'][0], $g['link'][1]), assistant_visible_guide()));
     $stable = <<<TXT
 You are the in-app assistant of the {$company} HRMS portal (attendance, leave, payroll, recruitment, projects, client / sub-vendor / candidate portals and a support desk).

@@ -121,7 +121,7 @@ function invoice_document(array $inv, array $o = []): void
       <?php if ($inv['status'] === 'Cancelled'): ?><div class="inv-stamp">Cancelled</div><?php elseif ($inv['status'] === 'Paid'): ?><div class="inv-stamp paid">Paid</div><?php endif; ?>
       <header class="inv-head">
         <div class="inv-from">
-          <img src="<?= e($logo ? file_url($logo) : asset('images/adorableIT_dark_logo.png')) ?>" alt="<?= e(setting('company_name')) ?>" class="inv-logo">
+          <img src="<?= e($logo ? file_url($logo) : asset('images/zveca-logo.png')) ?>" alt="<?= e(setting('company_name')) ?>" class="inv-logo">
           <div class="inv-company"><?= e(setting('company_name')) ?></div>
           <div class="inv-muted"><?= nl2br(e(setting('company_address', ''))) ?></div>
           <div class="inv-muted"><?= e(implode(' · ', array_filter([setting('company_email'), setting('company_phone')]))) ?></div>

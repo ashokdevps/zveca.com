@@ -565,7 +565,7 @@ function rdx_notify_client(int $clientId, string $subject, string $body): void
     $to = array_unique(array_filter(array_merge([(string) val('SELECT email FROM hrm_clients WHERE id = ?', [$clientId])],
         array_column(all("SELECT email FROM it_login WHERE client_id = ? AND status = 'active' AND is_signatory = 1", [$clientId]), 'email'))));
     foreach ($to as $addr) {
-        try { send_mail($addr, $subject, "Hello,\n\n$body\n\n— " . setting('company_name', 'Adorable IT Services')); } catch (Throwable $e) { error_log('Resdex mail: ' . $e->getMessage()); }
+        try { send_mail($addr, $subject, "Hello,\n\n$body\n\n— " . setting('company_name', 'Zveca')); } catch (Throwable $e) { error_log('Resdex mail: ' . $e->getMessage()); }
     }
 }
 

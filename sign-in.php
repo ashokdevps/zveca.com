@@ -169,7 +169,7 @@ if (is_post()) {
     }
 }
 
-$company = setting('company_name', 'Adorable IT Services');
+$company = setting('company_name', 'Zveca');
 $flashes = take_flashes();
 ?>
 <!doctype html>
@@ -182,9 +182,9 @@ $flashes = take_flashes();
   <meta property="og:title" content="<?= e($company) ?> HRMS · Sign in">
   <meta name="robots" content="noindex">
   <meta name="theme-color" content="#0077c0">
-  <link rel="icon" type="image/png" href="<?= asset('images/adorableit-mark.png') ?>">
+  <link rel="icon" type="image/png" href="<?= asset('images/zveca-mark.png') ?>">
   <link rel="manifest" href="<?= root_url('manifest.webmanifest') ?>">
-  <link rel="apple-touch-icon" href="<?= asset('images/adorableit-mark.png') ?>">
+  <link rel="apple-touch-icon" href="<?= asset('images/zveca-mark.png') ?>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= asset('css/bootstrap.min.css') ?>">
   <link rel="stylesheet" href="<?= asset('fonts/remix/remixicon.css') ?>">
@@ -194,7 +194,7 @@ $flashes = take_flashes();
 <div class="auth">
   <section class="auth-hero">
     <a href="<?= root_url('index.php') ?>" class="auth-brand">
-      <img src="<?= asset('images/adorableIT_dark_logo.png') ?>" alt="<?= e($company) ?>">
+      <img src="<?= asset('images/zveca-logo.png') ?>" alt="<?= e($company) ?>">
     </a>
     <div class="auth-copy">
       <h1>Everything your people need, in one place.</h1>
@@ -212,7 +212,7 @@ $flashes = take_flashes();
   <section class="auth-panel">
     <div class="auth-card">
       <div class="auth-top">
-        <a class="auth-logo-sm" href="<?= root_url('index.php') ?>"><img src="<?= asset('images/adorableIT_dark_logo.png') ?>" alt="<?= e($company) ?>"></a>
+        <a class="auth-logo-sm" href="<?= root_url('index.php') ?>"><img src="<?= asset('images/zveca-logo.png') ?>" alt="<?= e($company) ?>"></a>
         <a class="small text-muted" href="<?= root_url('index.php') ?>"><i class="ri-arrow-left-line"></i> Back to website</a>
       </div>
       <?php foreach ($flashes as [$t, $m]): ?><div class="alert alert-<?= e($t) ?>"><?= $m ?></div><?php endforeach; ?>

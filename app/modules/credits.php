@@ -184,7 +184,7 @@ if ($a === 'order') {
         (function () {
           var f = document.getElementById('rzpDone');
           var rz = new Razorpay({ key: <?= json_encode(rzp_keys()['id']) ?>, order_id: <?= json_encode($o['gateway_order_id']) ?>, amount: <?= (int) round($o['total'] * 100) ?>, currency: 'INR',
-            name: <?= json_encode(setting('company_name', 'Adorable IT Services')) ?>, description: <?= json_encode('Resdex ' . $o['plan_name']) ?>, prefill: { email: <?= json_encode(user()['email'] ?? '') ?> },
+            name: <?= json_encode(setting('company_name', 'Zveca')) ?>, description: <?= json_encode('Resdex ' . $o['plan_name']) ?>, prefill: { email: <?= json_encode(user()['email'] ?? '') ?> },
             handler: function (r) { ['razorpay_payment_id', 'razorpay_order_id', 'razorpay_signature'].forEach(function (k) { f.elements[k].value = r[k]; }); f.submit(); } });
           rz.on('payment.failed', function (r) { var d = new FormData(); d.append('_token', f.elements._token.value); d.append('id', f.elements.id.value); d.append('reason', (r.error && r.error.description) || 'Payment failed'); fetch(<?= json_encode(url('credits', ['a' => 'failed'])) ?>, { method: 'POST', body: d }); });
           document.getElementById('rzpPay').addEventListener('click', function () { rz.open(); });

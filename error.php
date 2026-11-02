@@ -8,7 +8,7 @@ if (!in_array($code, [403, 404, 410, 500], true)) $code = 404;
 http_response_code($code);
 header('Cache-Control: no-store');
 
-$company = 'Adorable IT Services';
+$company = 'Zveca';
 $signedIn = false;
 $asset = fn(string $p) => 'dashboard/assets/' . $p;
 $root = fn(string $p = '') => $p;
@@ -37,7 +37,7 @@ $copy = [
   <meta name="robots" content="noindex">
   <meta name="theme-color" content="#0077c0">
   <title><?= $code ?> · <?= htmlspecialchars($copy[0]) ?> · <?= htmlspecialchars($company) ?></title>
-  <link rel="icon" type="image/png" href="<?= htmlspecialchars($asset('images/adorableit-mark.png')) ?>">
+  <link rel="icon" type="image/png" href="<?= htmlspecialchars($asset('images/zveca-mark.png')) ?>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= htmlspecialchars($asset('fonts/remix/remixicon.css')) ?>">
   <style>
@@ -62,7 +62,7 @@ $copy = [
 </head>
 <body>
   <main class="err">
-    <a href="<?= htmlspecialchars($root('index.php')) ?>"><img class="err-logo" src="<?= htmlspecialchars($asset('images/adorableit-mark.png')) ?>" alt="<?= htmlspecialchars($company) ?>"></a>
+    <a href="<?= htmlspecialchars($root('index.php')) ?>"><img class="err-logo" src="<?= htmlspecialchars($asset('images/zveca-mark.png')) ?>" alt="<?= htmlspecialchars($company) ?>"></a>
     <p class="err-code" aria-hidden="true"><?= $code ?></p>
     <h1><?= htmlspecialchars($copy[0]) ?></h1>
     <p><?= htmlspecialchars($copy[1]) ?></p>

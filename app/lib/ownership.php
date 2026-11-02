@@ -147,7 +147,7 @@ function vendor_group(int $vendorId): array
 
 function client_label(int $clientId): string
 {
-    if ($clientId === 0) return setting('company_name', 'Adorable IT Services') . ' (direct)';
+    if ($clientId === 0) return setting('company_name', 'Zveca') . ' (direct)';
     return (string) (val('SELECT name FROM hrm_clients WHERE id = ?', [$clientId]) ?: 'Client #' . $clientId);
 }
 
@@ -321,7 +321,7 @@ function lock_notify(array $l, string $subject, string $body): void
     $in = implode(',', array_map('intval', $ids));
     $to = array_unique(array_filter(array_merge(array_column(all("SELECT email FROM hrm_vendors WHERE id IN ($in)"), 'email'),
         array_column(all("SELECT email FROM it_login WHERE vendor_id IN ($in) AND status = 'active'"), 'email'))));
-    $company = setting('company_name', 'Adorable IT Services');
+    $company = setting('company_name', 'Zveca');
     foreach ($to as $addr) {
         try {
             send_mail($addr, $subject, "Hello,\n\n$body\n\nVendor portal: " . (PHP_SAPI === 'cli' ? '' : ((!empty($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? '') . url('vendor', ['a' => 'locks']))) . "\n\n— $company Recruitment");

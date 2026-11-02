@@ -9,7 +9,7 @@
  */
 require __DIR__ . '/app/bootstrap.php';
 
-$company = setting('company_name', 'Adorable IT Services');
+$company = setting('company_name', 'Zveca');
 $enabled = setting('careers_enabled', '1') === '1' && plan_allows('manage_recruitment');
 $me = user();
 $isCandidate = $me && is_candidate();
@@ -604,9 +604,9 @@ $shareUrl = rawurlencode($canonical);
   <meta property="og:title" content="<?= e($title) ?>">
   <meta property="og:description" content="<?= e($desc) ?>">
   <meta property="og:url" content="<?= e($canonical) ?>">
-  <meta property="og:image" content="<?= e($origin . root_url('dashboard/assets/images/adorableIT_dark_logo.png')) ?>">
+  <meta property="og:image" content="<?= e($origin . root_url('dashboard/assets/images/zveca-logo.png')) ?>">
   <meta name="twitter:card" content="summary">
-  <link rel="icon" type="image/png" href="<?= $asset('dashboard/assets/images/adorableit-mark.png') ?>">
+  <link rel="icon" type="image/png" href="<?= $asset('dashboard/assets/images/zveca-mark.png') ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= $asset('dashboard/assets/css/bootstrap.min.css') ?>">
@@ -617,7 +617,7 @@ $shareUrl = rawurlencode($canonical);
       $ld = ['@context' => 'https://schema.org/', '@type' => 'JobPosting', 'title' => $job['title'],
           'description' => nl2br(e($job['description'] ?: $job['title'])), 'datePosted' => date('Y-m-d', strtotime($job['published_at'] ?: $job['created_at'])),
           'employmentType' => ['Full-time' => 'FULL_TIME', 'Part-time' => 'PART_TIME', 'Contract' => 'CONTRACTOR', 'Intern' => 'INTERN'][$job['employment_type']] ?? 'FULL_TIME',
-          'hiringOrganization' => ['@type' => 'Organization', 'name' => $company, 'sameAs' => 'https://adorableit.com', 'logo' => $origin . root_url('dashboard/assets/images/adorableit-mark.png')],
+          'hiringOrganization' => ['@type' => 'Organization', 'name' => $company, 'sameAs' => $origin, 'logo' => $origin . root_url('dashboard/assets/images/zveca-mark.png')],
           'identifier' => ['@type' => 'PropertyValue', 'name' => $company, 'value' => 'JOB-' . $job['id']],
           'directApply' => true, 'url' => $canonical, 'totalJobOpenings' => (int) $job['openings']];
       if (stripos((string) $job['location'], 'remote') !== false) {
@@ -641,7 +641,7 @@ $shareUrl = rawurlencode($canonical);
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="lp-header scrolled" id="top">
   <div class="container lp-nav">
-    <a class="lp-logo" href="<?= e(root_url('')) ?>"><img src="<?= $asset('dashboard/assets/images/adorableIT_dark_logo.png') ?>" alt="<?= e($company) ?>"></a>
+    <a class="lp-logo" href="<?= e(root_url('')) ?>"><img src="<?= $asset('dashboard/assets/images/zveca-logo.png') ?>" alt="<?= e($company) ?>"></a>
     <nav class="lp-menu" id="lpMenu" aria-label="Main">
       <a href="<?= e(root_url('')) ?>">Home</a>
       <a href="<?= e(root_url('find-jobs')) ?>" class="active" aria-current="page">Find Jobs</a>

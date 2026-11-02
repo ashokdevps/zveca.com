@@ -7,7 +7,7 @@
  * the site is served from localhost / CLI, so uploading it by accident is harmless.
  */
 $config = [
-    'app_name'  => 'Adorable HRMS',
+    'app_name'  => 'Zveca HRMS',
     'timezone'  => 'Asia/Kolkata',
     'debug'     => false,
 

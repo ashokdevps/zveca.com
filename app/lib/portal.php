@@ -299,7 +299,7 @@ function notify_stage_change(int $candidateId, string $stage): void
               LEFT JOIN hrm_jobs j ON j.id = c.job_id LEFT JOIN hrm_talent t ON t.id = c.talent_id LEFT JOIN hrm_vendors v ON v.id = c.vendor_id WHERE c.id = ?', [$candidateId]);
     if (!$c) return;
     $label = CANDIDATE_STAGE_LABELS[$stage] ?? $stage;
-    $company = setting('company_name', 'Adorable IT Services');
+    $company = setting('company_name', 'Zveca');
     $portal = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . root_url('sign-in.php');
     if ($c['talent_id'] && $c['t_email']) {
         send_mail($c['t_email'], "Update on your application: {$c['title']}", "Hi {$c['name']},\n\nYour application for {$c['title']} at $company is now: $label.\n\nSign in to see details: $portal\n\n— $company Careers");
@@ -320,7 +320,7 @@ function send_job_alerts(int $jobId, int $cap = 100): int
     if (!$job) return 0;
     $want = array_map('strtolower', skill_tags($job['skills'] . ',' . $job['title']));
     $link = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . root_url('find-jobs.php?job=' . $jobId);
-    $company = setting('company_name', 'Adorable IT Services');
+    $company = setting('company_name', 'Zveca');
     $sent = 0;
     foreach (all("SELECT full_name, email, key_skills, preferred_roles FROM hrm_talent WHERE job_alerts = 1 AND open_to_work = 1 AND email IS NOT NULL AND key_skills IS NOT NULL ORDER BY updated_at DESC") as $t) {
         $have = array_map('strtolower', skill_tags($t['key_skills'] . ',' . $t['preferred_roles']));

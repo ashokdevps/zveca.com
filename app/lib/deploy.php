@@ -46,7 +46,7 @@ function db_backup(string $label = 'manual'): string
     $file = BACKUP_DIR . '/' . preg_replace('/[^A-Za-z0-9_-]/', '', $dbName) . '-' . date('Ymd-His') . '-' . preg_replace('/[^a-z0-9-]+/', '-', strtolower($label)) . '.sql.gz';
     $gz = gzopen($file . '.part', 'wb6');
     if (!$gz) throw new RuntimeException('Cannot write ' . $file);
-    gzwrite($gz, "-- Adorable HRMS backup of `$dbName`, " . date('c') . " ($label)\n-- Schema version " . (setting('schema_version') ?: '0') . ', app build ' . APP_BUILD . "\n"
+    gzwrite($gz, "-- Zveca HRMS backup of `$dbName`, " . date('c') . " ($label)\n-- Schema version " . (setting('schema_version') ?: '0') . ', app build ' . APP_BUILD . "\n"
         . "SET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS = 0;\nSET SQL_MODE = 'NO_AUTO_VALUE_ON_ZERO';\n\n");
     $tables = array_column(all("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'"), 'Tables_in_' . $dbName);
     $buffered = $pdo->getAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY);
@@ -240,6 +240,9 @@ function data_updates(): array
             'why' => 'Only signatories can accept proposals and e-sign agreements. Existing client logins start as non-signatories; apply this to make all of them signatories, or set them one by one in Users & Roles.',
             'count' => fn() => (int) val("SELECT COUNT(*) FROM it_login WHERE LOWER(usertype) = 'client' AND is_signatory = 0"),
             'run' => fn() => q("UPDATE it_login SET is_signatory = 1 WHERE LOWER(usertype) = 'client' AND is_signatory = 0")->rowCount()],
+        'brand_zveca' => ['version' => 26, 'title' => 'Rename the company to Zveca in settings, website content and own job adverts',
+            'why' => 'Replaces "Adorable IT Services", "Adorable HRMS" and "Adorable IT" with "Zveca" / "Zveca HRMS" in Settings, in the Website content (draft and live) and in your own client record and the descriptions of your own jobs (not jobs of other clients). The website address becomes zveca.com and the footer "Company" links point at the home page sections. E-mail addresses, phone numbers, the address, social media links and historical records (clients, candidates, invoices, logs) are not changed.',
+            'count' => fn() => count(brand_zveca_rows()), 'run' => fn() => brand_zveca_run()],
         'stage_screening' => ['version' => 9, 'title' => 'Rename the old "Screening" stage to "HR Screening"', 'why' => 'Candidates still in the retired "Screening" stage do not show on the pipeline board.',
             'count' => fn() => (int) val("SELECT COUNT(*) FROM hrm_candidates WHERE stage = 'Screening'"),
             'run' => fn() => q("UPDATE hrm_candidates SET stage = 'HR Screening' WHERE stage = 'Screening'")->rowCount()],
@@ -262,6 +265,77 @@ function data_updates(): array
             'run' => function () { $before = (int) val("SELECT COUNT(*) FROM hrm_candidates WHERE resume LIKE 'http%' OR resume LIKE '%job-application%' OR resume LIKE '%apply-now%'"); migrate_public_resumes();
                 return $before - (int) val("SELECT COUNT(*) FROM hrm_candidates WHERE resume LIKE 'http%' OR resume LIKE '%job-application%' OR resume LIKE '%apply-now%'"); }],
     ];
+}
+
+/** v26 rebrand: the old brand in a text value (exact phrases only, so e-mail addresses and social links are left alone). */
+function brand_zveca_text(string $s): string
+{
+    $s = str_replace(['Adorable IT Services', 'AdorableIT Services', 'Adorable HRMS', 'Adorable IT'], ['Zveca', 'Zveca', 'Zveca HRMS', 'Zveca'], $s);
+    return preg_replace('#\bhrms\.adorableit\.com/dashboard\b#', 'zveca.com/dashboard', $s);
+}
+
+/** v26 rebrand of one website section: texts, the website address and the old site's page links. */
+function brand_zveca_site(array $d): array
+{
+    $links = ['https://adorableit.com' => 'https://zveca.com', 'https://adorableit.com/' => 'https://zveca.com', 'https://adorableit.com/about-us/' => '#about',
+        'https://adorableit.com/hr-platform/' => '#features', 'https://adorableit.com/tech-platform/' => '#services', 'https://adorableit.com/contact-us/' => '#contact'];
+    $out = [];
+    foreach ($d as $k => $v) {
+        if (is_array($v)) {
+            if (($v['href'] ?? '') === 'https://adorableit.com/blog/') continue; // the old company blog
+            $out[$k] = brand_zveca_site($v);
+        } else {
+            $out[$k] = is_string($v) ? ($links[$v] ?? brand_zveca_text($v)) : $v;
+        }
+    }
+    return array_keys($d) === range(0, count($d) - 1) ? array_values($out) : $out; // lists stay lists after an item is dropped
+}
+
+/** Rows the rebrand would change: [table, key, column, new value]. */
+function brand_zveca_rows(): array
+{
+    $rows = [];
+    foreach (all("SELECT k, v FROM hrm_settings WHERE v LIKE '%Adorable%'") as $r) {
+        $new = brand_zveca_text((string) $r['v']);
+        if ($new !== $r['v']) $rows[] = ['hrm_settings', $r['k'], 'v', $new];
+    }
+    if (table_exists('hrm_site_content')) {
+        foreach (all('SELECT section, draft, live FROM hrm_site_content') as $r) {
+            foreach (['draft', 'live'] as $col) {
+                $data = json_decode((string) $r[$col], true);
+                if (!is_array($data)) continue;
+                $new = json_encode(brand_zveca_site($data), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                if ($new !== json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) $rows[] = ['hrm_site_content', $r['section'], $col, $new];
+            }
+        }
+    }
+    // The company itself may be on the client list (its own jobs are raised for that record).
+    $self = table_exists('hrm_clients') ? all("SELECT id, name FROM hrm_clients WHERE name LIKE '%Adorable%'") : [];
+    foreach ($self as $r) {
+        $new = brand_zveca_text((string) $r['name']);
+        if ($new !== $r['name']) $rows[] = ['hrm_clients', $r['id'], 'name', $new];
+    }
+    $own = array_map('intval', array_column($self, 'id'));
+    foreach (all("SELECT id, description FROM hrm_jobs WHERE (client_id IS NULL" . ($own ? ' OR client_id IN (' . implode(',', $own) . ')' : '') . ") AND description LIKE '%Adorable%'") as $r) {
+        $new = brand_zveca_text((string) $r['description']);
+        if ($new !== $r['description']) $rows[] = ['hrm_jobs', $r['id'], 'description', $new];
+    }
+    return $rows;
+}
+
+function brand_zveca_run(): int
+{
+    $rows = brand_zveca_rows();
+    foreach ($rows as [$table, $key, $col, $new]) {
+        match ($table) {
+            'hrm_settings' => q('UPDATE hrm_settings SET v = ? WHERE k = ?', [$new, $key]), // data-safe: only run from data_updates() (Super Admin, after a backup)
+            'hrm_site_content' => q("UPDATE hrm_site_content SET `$col` = ? WHERE section = ?", [$new, $key]), // $col is 'draft' or 'live'
+            'hrm_jobs' => q('UPDATE hrm_jobs SET description = ? WHERE id = ?', [$new, $key]),
+            'hrm_clients' => q('UPDATE hrm_clients SET name = ? WHERE id = ?', [$new, $key]),
+        };
+    }
+    setting('__flush');
+    return count($rows);
 }
 
 /** Updates offered to this installation (the ones introduced after the version it upgraded from), not yet applied or dismissed. */

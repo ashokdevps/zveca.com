@@ -63,8 +63,8 @@ $hidden = array_flip($S['layout']['hidden']);
   <meta property="og:type" content="website">
   <meta property="og:title" content="<?= $t($S['seo']['og_title']) ?>">
   <meta property="og:description" content="<?= $t($S['seo']['og_description']) ?>">
-  <meta property="og:image" content="<?= e(img($S['seo']['og_image'], 'dashboard/assets/images/adorableIT_dark_logo.png')) ?>">
-  <link rel="icon" type="image/png" href="<?= v('dashboard/assets/images/adorableit-mark.png') ?>">
+  <meta property="og:image" content="<?= e(img($S['seo']['og_image'], 'dashboard/assets/images/zveca-logo.png')) ?>">
+  <link rel="icon" type="image/png" href="<?= v('dashboard/assets/images/zveca-mark.png') ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= v('dashboard/assets/css/bootstrap.min.css') ?>">
@@ -101,7 +101,7 @@ $hidden = array_flip($S['layout']['hidden']);
 
 <header class="lp-header" id="top">
   <div class="container lp-nav">
-    <a class="lp-logo" href="./"><img src="<?= e(img($g['logo'], 'dashboard/assets/images/adorableIT_dark_logo.png')) ?>" alt="<?= $t($g['company']) ?>"></a>
+    <a class="lp-logo" href="./"><img src="<?= e(img($g['logo'], 'dashboard/assets/images/zveca-logo.png')) ?>" alt="<?= $t($g['company']) ?>"></a>
     <nav class="lp-menu" id="lpMenu" aria-label="Main">
       <?php foreach ($S['nav']['links'] as $l): if (trim((string) ($l['label'] ?? '')) === '') continue; ?><a href="<?= e(site_href($l['href'] ?? '')) ?>"><?= $t($l['label']) ?></a><?php endforeach; ?>
       <a class="lp-btn lp-btn-primary d-lg-none mt-2" href="<?= $portalUrl ?>"><?= $portalLabel ?></a>
@@ -137,7 +137,7 @@ case 'hero': ?>
               <img class="hx-hero-img" src="<?= e(file_url($d['image'])) ?>" alt="" loading="eager">
             <?php else: ?>
             <div class="lp-mock" aria-hidden="true">
-              <div class="lp-mock-bar"><span></span><span></span><span></span><em>hrms.adorableit.com/dashboard</em></div>
+              <div class="lp-mock-bar"><span></span><span></span><span></span><em>zveca.com/dashboard</em></div>
               <div class="lp-mock-body">
                 <div class="lp-mock-hero">
                   <div><small>Good morning,</small><b>Priya 👋</b><small class="op">Tuesday · Office 09:30 – 18:30</small></div>
@@ -314,7 +314,7 @@ case 'hero': ?>
   <div class="container">
     <div class="row g-4">
       <div class="col-lg-4">
-        <img class="lp-footer-logo" src="<?= e(img($g['footer_logo'], 'dashboard/assets/images/adorableit-logo-light.png')) ?>" alt="<?= $t($g['company']) ?>">
+        <img class="lp-footer-logo" src="<?= e(img($g['footer_logo'], 'dashboard/assets/images/zveca-logo-light.png')) ?>" alt="<?= $t($g['company']) ?>">
         <p><?= $t($S['footer']['text']) ?></p>
         <div class="lp-social"><?php foreach ($S['footer']['socials'] as $s): ?><a href="<?= e(site_href($s['url'] ?? '')) ?>" target="_blank" rel="noopener" aria-label="<?= $t($s['label'] ?? '') ?>"><i class="<?= site_icon($s['icon'] ?? '', 'ri-links-line') ?>"></i></a><?php endforeach; ?></div>
       </div>

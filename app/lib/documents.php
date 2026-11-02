@@ -205,7 +205,7 @@ function doc_notify_once(string $key, array $to, string $subject, string $body):
     if (!$to) return false;
     try { insert('hrm_notification_log', ['k' => mb_substr($key, 0, 190)]); } catch (PDOException $e) { return false; }
     foreach ($to as $addr) {
-        try { send_mail($addr, $subject, "Hello,\n\n$body\n\n— " . setting('company_name', 'Adorable IT Services')); } catch (Throwable $ex) { error_log('Document mail: ' . $ex->getMessage()); }
+        try { send_mail($addr, $subject, "Hello,\n\n$body\n\n— " . setting('company_name', 'Zveca')); } catch (Throwable $ex) { error_log('Document mail: ' . $ex->getMessage()); }
     }
     return true;
 }

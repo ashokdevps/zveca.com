@@ -9,4 +9,4 @@ Disallow: /logout
 Disallow: /app/
 Disallow: /vendor/
 Disallow: /_legacy/
-Sitemap: https://hrms.adorableit.com/sitemap.xml
+Sitemap: https://zveca.com/sitemap.xml

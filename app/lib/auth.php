@@ -328,12 +328,12 @@ function require_login(): void
     }
     if (is_client() && !user()['client']) {
         logout_user();
-        flash('danger', 'Your client account is not linked to a company yet. Please contact Adorable IT.');
+        flash('danger', 'Your client account is not linked to a company yet. Please contact Zveca.');
         redirect(root_url('sign-in.php'));
     }
     if (is_vendor() && (!user()['vendor'] || user()['vendor']['status'] !== 'Active')) {
         logout_user();
-        flash('danger', 'Your vendor account is not linked to an active partner agency. Please contact Adorable IT.');
+        flash('danger', 'Your vendor account is not linked to an active partner agency. Please contact Zveca.');
         redirect(root_url('sign-in.php'));
     }
     if (is_candidate() && !user()['talent']) {

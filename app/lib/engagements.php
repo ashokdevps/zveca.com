@@ -793,7 +793,7 @@ function eng_doc_letter(array $d, string $footer = ''): string
 {
     $logo = setting('company_logo');
     $body = $d['content'] ? '<div class="policy-body">' . $d['content'] . '</div>' : ($d['file'] ? '<p><a class="btn btn-light border" href="' . e(file_url($d['file'])) . '" target="_blank" rel="noopener"><i class="ri-file-download-line me-1"></i>Open ' . e($d['original_name'] ?: basename($d['file'])) . '</a></p>' : '');
-    return '<article class="onb-letter letter"><header class="onb-letterhead"><img src="' . e($logo ? file_url($logo) : asset('images/adorableIT_dark_logo.png')) . '" alt="">'
+    return '<article class="onb-letter letter"><header class="onb-letterhead"><img src="' . e($logo ? file_url($logo) : asset('images/zveca-logo.png')) . '" alt="">'
         . '<div><strong>' . e(setting('company_name')) . '</strong><small>' . nl2br(e((string) setting('company_address', ''))) . '</small></div>'
         . '<div class="text-end small"><span class="text-muted">Version</span> ' . (int) $d['version'] . ($d['ref'] ?? null ? '<br><span class="text-muted">Ref</span> ' . e($d['ref']) : '') . '</div></header>'
         . '<h2 class="onb-letter-title">' . e(ENG_DOC_KINDS[$d['kind']]['label'] ?? $d['title']) . '</h2>' . $body . $footer . '</article>';

@@ -13,7 +13,7 @@ if (setting('candidate_signup', '1') !== '1' || !plan_allows('candidate_jobs')) 
     redirect(root_url('sign-in.php'));
 }
 
-$company = setting('company_name', 'Adorable IT Services');
+$company = setting('company_name', 'Zveca');
 $jobId = (int) ($_GET['job'] ?? $_POST['job'] ?? 0);
 $job = $jobId ? one('SELECT j.id, j.title FROM hrm_jobs j WHERE j.id = ? AND ' . public_jobs_where(), [$jobId]) : null;
 $errors = [];
@@ -74,7 +74,7 @@ $_SESSION['signup_t'] = time();
   <meta property="og:title" content="Create your candidate profile · <?= e($company) ?> Careers">
   <meta property="og:type" content="website">
   <meta name="theme-color" content="#0077c0">
-  <link rel="icon" type="image/png" href="<?= asset('images/adorableit-mark.png') ?>">
+  <link rel="icon" type="image/png" href="<?= asset('images/zveca-mark.png') ?>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= asset('css/bootstrap.min.css') ?>">
   <link rel="stylesheet" href="<?= asset('fonts/remix/remixicon.css') ?>">
@@ -83,7 +83,7 @@ $_SESSION['signup_t'] = time();
 <body class="auth-body">
 <div class="auth">
   <section class="auth-hero">
-    <a href="<?= root_url('index.php') ?>" class="auth-brand"><img src="<?= asset('images/adorableIT_dark_logo.png') ?>" alt="<?= e($company) ?>"></a>
+    <a href="<?= root_url('index.php') ?>" class="auth-brand"><img src="<?= asset('images/zveca-logo.png') ?>" alt="<?= e($company) ?>"></a>
     <div class="auth-copy">
       <h1>One profile. Every opportunity.</h1>
       <p>Create your candidate profile once and apply to <?= e($company) ?> openings in one click.</p>
@@ -99,7 +99,7 @@ $_SESSION['signup_t'] = time();
   <section class="auth-panel">
     <div class="auth-card">
       <div class="auth-top">
-        <a class="auth-logo-sm" href="<?= root_url('index.php') ?>"><img src="<?= asset('images/adorableIT_dark_logo.png') ?>" alt="<?= e($company) ?>"></a>
+        <a class="auth-logo-sm" href="<?= root_url('index.php') ?>"><img src="<?= asset('images/zveca-logo.png') ?>" alt="<?= e($company) ?>"></a>
         <a class="small text-muted" href="<?= root_url('find-jobs.php') ?>"><i class="ri-arrow-left-line"></i> Browse jobs</a>
       </div>
       <?php foreach (take_flashes() as [$t, $m]): ?><div class="alert alert-<?= e($t) ?>"><?= $m ?></div><?php endforeach; ?>

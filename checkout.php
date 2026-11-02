@@ -1,6 +1,6 @@
 <?php
 /**
- * Website checkout for Adorable HRMS subscriptions.
+ * Website checkout for Zveca HRMS subscriptions.
  *
  *   GET  /checkout?plan=standard&users=25&cycle=annual   order form with a live GST quote
  *   POST action=create   validates, recomputes the price on the server, creates the order and a Razorpay order
@@ -15,7 +15,7 @@ require __DIR__ . '/app/bootstrap.php';
 send_security_headers(true);
 header('Cache-Control: no-store');
 
-$company = setting('company_name', 'Adorable IT Services');
+$company = setting('company_name', 'Zveca');
 $action = $_POST['action'] ?? '';
 
 /* ───────────── Create order ───────────── */
@@ -76,7 +76,7 @@ if (is_post() && $action === 'create') {
         if ($sales = setting('sales_email') ?: setting('company_email')) {
             send_mail($sales, "[Quote] {$sub['company']} · $planName · {$sub['users']} users", "Order $orderNo (online payment is not configured).\n\nCompany: {$sub['company']}\nContact: {$sub['contact_name']} <{$sub['email']}> {$sub['phone']}\nTotal: " . inr((float) $sub['total'], true), $sub['email']);
         }
-        send_mail($sub['email'], "Your Adorable HRMS quote ($orderNo)", "Hi {$sub['contact_name']},\n\nThanks for choosing Adorable HRMS $planName for {$sub['users']} users. Our team will e-mail you a secure payment link within one business day.\n\nTotal: " . inr((float) $sub['total'], true) . " (incl. GST)\nOrder: " . order_url($sub, [], true) . "\n\n— $company");
+        send_mail($sub['email'], "Your Zveca HRMS quote ($orderNo)", "Hi {$sub['contact_name']},\n\nThanks for choosing Zveca HRMS $planName for {$sub['users']} users. Our team will e-mail you a secure payment link within one business day.\n\nTotal: " . inr((float) $sub['total'], true) . " (incl. GST)\nOrder: " . order_url($sub, [], true) . "\n\n— $company");
     }
     log_activity('order created', 'Subscription', $id, "$orderNo · $planName · {$sub['users']} users · " . inr((float) $sub['total']));
     redirect(order_url($sub));
@@ -123,7 +123,7 @@ if (is_post() && $action === 'failed') {
 function not_found_public(): never
 {
     http_response_code(404);
-    site_page_start('Order not found · Adorable HRMS', 'Order not found');
+    site_page_start('Order not found · Zveca HRMS', 'Order not found');
     echo '<section class="lp-section"><div class="container text-center"><h1 class="h3">Order not found</h1><p class="lp-muted">The link may be incomplete. Check the e-mail we sent you, or contact <a href="mailto:info@adorableit.com">info@adorableit.com</a>.</p><a class="lp-btn lp-btn-primary" href="' . e(root_url('pricing')) . '">View plans</a></div></section>';
     site_page_end();
     exit;
@@ -138,13 +138,13 @@ if (isset($_GET['order'])) {
     if (!empty($_GET['invoice'])) {
         if ($sub['status'] !== 'paid') not_found_public();
         $gstin = setting('company_gstin');
-        site_page_start('Invoice ' . $sub['invoice_no'] . ' · Adorable HRMS', 'Tax invoice');
+        site_page_start('Invoice ' . $sub['invoice_no'] . ' · Zveca HRMS', 'Tax invoice');
         ?>
         <section class="inv-wrap"><div class="container">
           <div class="inv-actions"><a class="lp-btn lp-btn-ghost" href="<?= e(order_url($sub)) ?>"><i class="ri-arrow-left-line"></i> Order</a><button class="lp-btn lp-btn-primary" onclick="window.print()"><i class="ri-printer-line"></i> Print / Save PDF</button></div>
           <article class="inv">
             <header class="inv-head">
-              <div><img src="<?= e(root_url('dashboard/assets/images/adorableIT_dark_logo.png')) ?>" alt="" height="48"><div class="inv-seller"><b><?= e($company) ?></b><br><?= nl2br(e(setting('company_address', '1st Floor, B-135, B Block, Sector 2, Noida, Uttar Pradesh 201301'))) ?>
+              <div><img src="<?= e(root_url('dashboard/assets/images/zveca-logo.png')) ?>" alt="" height="48"><div class="inv-seller"><b><?= e($company) ?></b><br><?= nl2br(e(setting('company_address', '1st Floor, B-135, B Block, Sector 2, Noida, Uttar Pradesh 201301'))) ?>
                 <?= $gstin ? '<br>GSTIN: <b>' . e($gstin) . '</b>' : '' ?><br>State: <?= e(setting('company_state', 'Uttar Pradesh')) ?></div></div>
               <div class="inv-title"><h1><?= $gstin ? 'Tax invoice' : 'Invoice' ?></h1><dl><dt>Invoice no.</dt><dd><?= e($sub['invoice_no']) ?></dd><dt>Date</dt><dd><?= fdate($sub['paid_at']) ?></dd><dt>Order</dt><dd><?= e($sub['order_no']) ?></dd></dl></div>
             </header>
@@ -155,7 +155,7 @@ if (isset($_GET['order'])) {
             <table class="inv-table">
               <thead><tr><th>Description</th><th>SAC</th><th class="text-end">Users</th><th class="text-end">Rate</th><th class="text-end">Amount</th></tr></thead>
               <tbody>
-                <tr><td><b>Adorable HRMS — <?= e($planName) ?> plan</b><br><small><?= $cycleLabel ?> subscription · <?= fdate($sub['period_start']) ?> to <?= fdate($sub['period_end']) ?> · <?= $sub['cycle'] === 'annual' ? '12 months' : '1 month' ?> × <?= inr((float) $sub['unit_price'], true) ?>/user/month</small></td>
+                <tr><td><b>Zveca HRMS — <?= e($planName) ?> plan</b><br><small><?= $cycleLabel ?> subscription · <?= fdate($sub['period_start']) ?> to <?= fdate($sub['period_end']) ?> · <?= $sub['cycle'] === 'annual' ? '12 months' : '1 month' ?> × <?= inr((float) $sub['unit_price'], true) ?>/user/month</small></td>
                   <td><?= e(setting('invoice_sac', '998315')) ?></td><td class="text-end"><?= (int) $sub['users'] ?></td><td class="text-end"><?= inr((float) $sub['unit_price'] * ($sub['cycle'] === 'annual' ? 12 : 1), true) ?></td><td class="text-end"><?= inr((float) $sub['subtotal'], true) ?></td></tr>
               </tbody>
               <tfoot>
@@ -177,7 +177,7 @@ if (isset($_GET['order'])) {
 
     $k = rzp_keys();
     $failed = $sub['failure_reason'];
-    site_page_start('Order ' . $sub['order_no'] . ' · Adorable HRMS', 'Your Adorable HRMS order', 'Pricing');
+    site_page_start('Order ' . $sub['order_no'] . ' · Zveca HRMS', 'Your Zveca HRMS order', 'Pricing');
     ?>
     <section class="co-wrap"><div class="container">
       <?php foreach (take_flashes() as [$type, $msg]): ?><div class="alert alert-<?= e($type) ?>"><?= $msg ?></div><?php endforeach; ?>
@@ -221,8 +221,8 @@ if (isset($_GET['order'])) {
     $scripts = '';
     if ($sub['status'] === 'created' && $k['id'] !== '') {
         $opts = ['key' => $k['id'], 'amount' => (int) round($sub['total'] * 100), 'currency' => 'INR', 'name' => $company, 'order_id' => $sub['gateway_order_id'],
-            'description' => "Adorable HRMS $planName · {$sub['users']} users · " . strtolower($cycleLabel),
-            'image' => site_origin() . root_url('dashboard/assets/images/adorableit-mark.png'),
+            'description' => "Zveca HRMS $planName · {$sub['users']} users · " . strtolower($cycleLabel),
+            'image' => site_origin() . root_url('dashboard/assets/images/zveca-mark.png'),
             'prefill' => ['name' => $sub['contact_name'], 'email' => $sub['email'], 'contact' => $sub['phone']],
             'notes' => ['order_no' => $sub['order_no']], 'theme' => ['color' => '#0077c0']];
         $scripts = '<script src="https://checkout.razorpay.com/v1/checkout.js"></script><script>(function () {
@@ -262,7 +262,7 @@ if ($renew && !$old) {
 }
 $o = fn(string $k, string $def = '') => e($old[$k] ?? $def);
 $q = plan_quote($plan, $users, $cycle);
-site_page_start('Checkout · Adorable HRMS ' . PLANS[$plan]['name'], 'Buy Adorable HRMS: per-user pricing, GST invoice, secure payment.', 'Pricing');
+site_page_start('Checkout · Zveca HRMS ' . PLANS[$plan]['name'], 'Buy Zveca HRMS: per-user pricing, GST invoice, secure payment.', 'Pricing');
 ?>
 <section class="co-wrap"><div class="container">
   <div class="co-steps" aria-label="Checkout steps"><span class="on">1 · Plan & details</span><span>2 · Secure payment</span><span>3 · Workspace setup</span></div>
@@ -271,7 +271,7 @@ site_page_start('Checkout · Adorable HRMS ' . PLANS[$plan]['name'], 'Buy Adorab
     <?= csrf_field() ?><input type="hidden" name="action" value="create">
     <?php if ($renew): ?><input type="hidden" name="renew" value="<?= e($renew['order_no']) ?>"><input type="hidden" name="renew_t" value="<?= e(order_token($renew['order_no'])) ?>"><?php endif; ?>
     <div class="co-main">
-      <h1 class="co-title"><?= $renew ? 'Renew your subscription' : 'Get started with Adorable HRMS' ?></h1>
+      <h1 class="co-title"><?= $renew ? 'Renew your subscription' : 'Get started with Zveca HRMS' ?></h1>
       <fieldset class="co-card">
         <legend>Your plan</legend>
         <div class="co-plans">

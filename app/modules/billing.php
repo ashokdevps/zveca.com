@@ -29,9 +29,9 @@ function billing_send_reminders(): int
 function billing_mail_renewal(array $s): void
 {
     $link = site_origin() . root_url('checkout') . '?' . http_build_query(['renew' => $s['order_no'], 't' => order_token($s['order_no'])]);
-    send_mail($s['email'], 'Your Adorable HRMS subscription renews on ' . fdate(date('Y-m-d', strtotime($s['period_end'] . ' +1 day'))),
+    send_mail($s['email'], 'Your Zveca HRMS subscription renews on ' . fdate(date('Y-m-d', strtotime($s['period_end'] . ' +1 day'))),
         "Hi {$s['contact_name']},\n\nYour " . (PLANS[$s['plan']]['name'] ?? $s['plan']) . " plan for {$s['company']} ({$s['users']} users) is paid until " . fdate($s['period_end'])
-        . ".\n\nRenew in one click (you can change the plan or number of users): $link\n\nQuestions? Just reply to this e-mail.\n\n— " . setting('company_name', 'Adorable IT Services'));
+        . ".\n\nRenew in one click (you can change the plan or number of users): $link\n\nQuestions? Just reply to this e-mail.\n\n— " . setting('company_name', 'Zveca'));
 }
 
 if ($a === 'mark_paid' && is_post()) {
@@ -58,7 +58,7 @@ if ($a === 'paylink' && is_post()) {
             q("UPDATE hrm_subscriptions SET gateway_order_id = ?, gateway = 'razorpay', status = 'created', failure_reason = NULL WHERE id = ?", [$rz['id'], $s['id']]);
             $s = billing_sub((int) $s['id']);
         }
-        send_mail($s['email'], "Payment link for your Adorable HRMS order {$s['order_no']}", "Hi {$s['contact_name']},\n\nPay securely (UPI, cards, net banking): " . order_url($s, [], true)
+        send_mail($s['email'], "Payment link for your Zveca HRMS order {$s['order_no']}", "Hi {$s['contact_name']},\n\nPay securely (UPI, cards, net banking): " . order_url($s, [], true)
             . "\n\nAmount: " . inr((float) $s['total'], true) . " (incl. GST)\n\n— " . setting('company_name'));
         flash('success', 'Payment link e-mailed to ' . e($s['email']) . '.');
     } catch (RuntimeException $ex) {

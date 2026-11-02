@@ -5,7 +5,7 @@
  * Every statement is idempotent.
  */
 
-const SCHEMA_VERSION = 25;
+const SCHEMA_VERSION = 26; // v26: no table change; offers the Zveca rebrand under Database & Updates
 
 function schema_tables(): array
 {
@@ -2210,7 +2210,7 @@ function migrate_public_resumes(): void
 function seed_defaults(): void
 {
     $defaults = [
-        'company_name'    => 'Adorable IT Services',
+        'company_name'    => 'Zveca',
         'company_email'   => 'hr@adorableit.com',
         'company_phone'   => '',
         'company_address' => '',

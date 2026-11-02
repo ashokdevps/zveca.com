@@ -15,8 +15,8 @@ $faqs = [
 ];
 $cell = fn($v) => $v === true ? '<i class="ri-checkbox-circle-fill pr-yes" aria-label="Included"></i>' : ($v === false ? '<i class="ri-subtract-line pr-no" aria-label="Not included"></i>' : '<span>' . e($v) . '</span>');
 
-site_page_start('Pricing · Adorable HRMS — per-user plans from ' . inr(plan_unit_price('light', 'annual'), true) . '/user/month', 'Simple per-user pricing for Adorable HRMS: Light, Standard and Pro plans with attendance, payroll, performance, probation, hiring and AI.', 'Pricing',
-    '<script type="application/ld+json">' . json_encode(['@context' => 'https://schema.org', '@type' => 'Product', 'name' => 'Adorable HRMS', 'brand' => ['@type' => 'Brand', 'name' => 'Adorable IT Services'],
+site_page_start('Pricing · Zveca HRMS — per-user plans from ' . inr(plan_unit_price('light', 'annual'), true) . '/user/month', 'Simple per-user pricing for Zveca HRMS: Light, Standard and Pro plans with attendance, payroll, performance, probation, hiring and AI.', 'Pricing',
+    '<script type="application/ld+json">' . json_encode(['@context' => 'https://schema.org', '@type' => 'Product', 'name' => 'Zveca HRMS', 'brand' => ['@type' => 'Brand', 'name' => 'Zveca'],
         'offers' => array_map(fn($k) => ['@type' => 'Offer', 'name' => PLANS[$k]['name'], 'price' => plan_price($k), 'priceCurrency' => 'INR', 'url' => site_origin() . root_url('checkout') . '?plan=' . $k], array_keys(PLANS))], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>');
 ?>
 <section class="pr-hero">
@@ -31,7 +31,7 @@ site_page_start('Pricing · Adorable HRMS — per-user plans from ' . inr(plan_u
     <?= pricing_cards() ?>
     <div class="pr-enterprise">
       <div><span class="pr-icon"><i class="ri-building-4-line"></i></span><div><b>Enterprise · <?= max_online_users() ?>+ employees</b><small>Volume pricing, dedicated instance, custom integrations, SSO and an account manager.</small></div></div>
-      <a class="lp-btn lp-btn-ghost" href="https://wa.me/919871864942?text=<?= rawurlencode('Hello, I would like Enterprise pricing for Adorable HRMS.') ?>" target="_blank" rel="noopener"><i class="ri-whatsapp-line"></i> Talk to sales</a>
+      <a class="lp-btn lp-btn-ghost" href="https://wa.me/919871864942?text=<?= rawurlencode('Hello, I would like Enterprise pricing for Zveca HRMS.') ?>" target="_blank" rel="noopener"><i class="ri-whatsapp-line"></i> Talk to sales</a>
     </div>
   </div>
 </section>
@@ -70,7 +70,7 @@ site_page_start('Pricing · Adorable HRMS — per-user plans from ' . inr(plan_u
     <div class="lp-cta-box hx-cta-box">
       <div><h2>Not sure which plan fits?</h2><p>Get a free 30-minute walkthrough tailored to your team.</p></div>
       <div class="d-flex gap-2 flex-wrap">
-        <a class="lp-btn lp-btn-light lp-btn-lg" href="https://wa.me/919871864942?text=<?= rawurlencode('Hello Adorable IT, I would like a demo of Adorable HRMS.') ?>" target="_blank" rel="noopener"><i class="ri-whatsapp-line"></i> Book a demo</a>
+        <a class="lp-btn lp-btn-light lp-btn-lg" href="https://wa.me/919871864942?text=<?= rawurlencode('Hello Zveca, I would like a demo of Zveca HRMS.') ?>" target="_blank" rel="noopener"><i class="ri-whatsapp-line"></i> Book a demo</a>
         <a class="lp-btn lp-btn-outline-light lp-btn-lg" href="<?= e(root_url('checkout') . '?plan=standard') ?>">Buy Standard</a>
       </div>
     </div>

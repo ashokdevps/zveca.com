@@ -5,7 +5,7 @@
  */
 require __DIR__ . '/app/bootstrap.php';
 
-$co = setting('company_name', 'Adorable IT Services');
+$co = setting('company_name', 'Zveca');
 $email = setting('company_email', 'info@adorableit.com');
 $addr = '1st Floor, B-135, B Block, Sector 2, Noida, Uttar Pradesh 201301, India';
 $updated = '4 October 2026';
@@ -13,7 +13,7 @@ $days = 7;
 
 $pages = [
     'terms' => ['Terms of service', [
-        'Agreement' => "These terms govern your use of Adorable HRMS (the \"Service\"), a cloud HR software service provided by $co (\"we\", \"us\"). By creating an order, paying, or using the Service you agree to these terms on behalf of your organisation (\"Customer\").",
+        'Agreement' => "These terms govern your use of Zveca HRMS (the \"Service\"), a cloud HR software service provided by $co (\"we\", \"us\"). By creating an order, paying, or using the Service you agree to these terms on behalf of your organisation (\"Customer\").",
         'Subscription and users' => 'The Service is sold per active user per month on the Light, Standard or Pro plan, billed monthly or annually in advance. An active user is an employee record with an active status. Inactive employees, candidates, sub-vendor and client logins are not billed. Adding users or upgrading takes effect immediately and is charged pro-rata for the current period; downgrades take effect at the next renewal.',
         'Payment and taxes' => 'Prices are in Indian Rupees and exclude GST, which is charged at the applicable rate. Payments are processed by Razorpay. Subscriptions renew for the same period unless cancelled before the end of the current period; we send a renewal reminder before each renewal. If payment is not received within 15 days of the period end, access may be suspended until payment is made.',
         'Customer data' => 'You own all data you put into the Service. We process it only to provide the Service, as described in our privacy policy. You are responsible for the accuracy of the data, for obtaining any consents required from your employees, and for keeping login credentials confidential.',
@@ -24,7 +24,7 @@ $pages = [
         'Governing law' => 'These terms are governed by the laws of India. Courts at Noida / Gautam Buddh Nagar, Uttar Pradesh have exclusive jurisdiction.',
     ]],
     'privacy' => ['Privacy policy', [
-        'Who we are' => "$co, $addr, provides Adorable HRMS. For the employee data you store in the Service, your organisation is the data fiduciary and we act as its processor. For website visitors and buyers, we are the data fiduciary.",
+        'Who we are' => "$co, $addr, provides Zveca HRMS. For the employee data you store in the Service, your organisation is the data fiduciary and we act as its processor. For website visitors and buyers, we are the data fiduciary.",
         'What we collect' => 'Buyer details you give at checkout (company, name, e-mail, phone, billing address, GSTIN); data your organisation stores in the Service (employee profiles, attendance, leave, payroll, performance and documents); technical data needed to secure the Service (IP address, device and browser, sign-in times). Card and bank details are entered on Razorpay\'s secure page and are never stored by us.',
         'How we use it' => 'To provide and secure the Service, process payments and issue GST invoices, provide support, send service and billing e-mails, and comply with law. We do not sell personal data or use your organisation\'s HR data for advertising.',
         'Sharing' => 'With Razorpay to process payments, our hosting and e-mail providers to run the Service, and authorities where legally required. Each provider is bound to protect the data.',
@@ -34,14 +34,14 @@ $pages = [
         'Cookies' => 'We use only essential cookies needed for sign-in and security (session and CSRF protection). We do not use advertising cookies.',
     ]],
     'refund-policy' => ['Refund & cancellation policy', [
-        "$days-day money-back guarantee" => "If you are not satisfied with your first purchase of Adorable HRMS, write to $email within $days days of payment and we will refund the full amount, no questions asked. This applies once per organisation.",
+        "$days-day money-back guarantee" => "If you are not satisfied with your first purchase of Zveca HRMS, write to $email within $days days of payment and we will refund the full amount, no questions asked. This applies once per organisation.",
         'Cancellation' => 'You can cancel your subscription at any time from your account or by e-mail. Cancellation stops the next renewal; your workspace stays available until the end of the period you have already paid for.',
         'Refunds after the guarantee period' => 'Payments made after the first ' . $days . ' days are non-refundable for the current billing period, except where we fail to provide the Service as described, in which case we refund the unused portion pro-rata.',
         'Duplicate or failed payments' => 'If you were charged twice or money was deducted for a failed payment, it is refunded automatically by Razorpay or your bank, usually within 5–7 working days. If not, contact us with your order number.',
         'How refunds are paid' => 'Approved refunds are made to the original payment method within 5–7 working days. A GST credit note is issued against the original invoice.',
     ]],
     'delivery-policy' => ['Delivery policy', [
-        'Digital service' => 'Adorable HRMS is a cloud software service. Nothing is shipped physically.',
+        'Digital service' => 'Zveca HRMS is a cloud software service. Nothing is shipped physically.',
         'How the service is delivered' => 'After successful payment you receive an e-mail receipt and GST invoice immediately. Your workspace is set up and the administrator login is sent to the e-mail address given at checkout within one business day (usually the same day).',
         'Delays' => "If you have not received your login within one business day, contact $email or WhatsApp +91-9871864942 with your order number.",
     ]],
@@ -53,7 +53,7 @@ if (!isset($pages[$page])) {
 }
 [$title, $sections] = $pages[$page];
 
-site_page_start("$title · Adorable HRMS", "$title for Adorable HRMS by $co.");
+site_page_start("$title · Zveca HRMS", "$title for Zveca HRMS by $co.");
 ?>
 <section class="legal"><div class="container">
   <nav class="legal-nav" aria-label="Policies"><?php foreach ($pages as $k => [$t]): ?><a href="<?= e(root_url($k)) ?>" class="<?= $k === $page ? 'active' : '' ?>"><?= e($t) ?></a><?php endforeach; ?></nav>
