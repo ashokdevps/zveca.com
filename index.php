@@ -1,386 +1,785 @@
-<?php
-/**
- * Public home page. Every text, list, link and image comes from the website content manager
- * (Administration → Website, app/lib/site.php); defaults reproduce the original page when nothing is edited.
- * Only helpers.php + db.php are loaded (fast). It peeks at the session to switch "Login" / "Go to Dashboard"
- * and, for a signed-in Super Admin with ?preview=1, shows unpublished changes.
- */
-define('APP_DIR', __DIR__ . '/app');
-define('PUBLIC_DIR', __DIR__);
-require APP_DIR . '/lib/helpers.php'; // functions only
-require APP_DIR . '/lib/db.php';      // prices and page content come from the database; defaults are used if it is unavailable
-require APP_DIR . '/lib/plans.php';
-require APP_DIR . '/lib/insights.php';
-require APP_DIR . '/lib/site.php';
-send_security_headers();
-$https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
-session_name('HRMSSESSID');
-session_set_cookie_params(['lifetime' => 0, 'path' => '/', 'secure' => $https, 'httponly' => true, 'samesite' => 'Lax']);
-session_start(['read_and_close' => true]);
-$loggedIn = !empty($_SESSION['uid']);
-$preview = false;
-if ($loggedIn && isset($_GET['preview'])) {
-    try { $preview = strtolower((string) val("SELECT usertype FROM it_login WHERE id = ? AND status = 'active'", [(int) $_SESSION['uid']])) === 'admin'; } catch (Throwable $e) { $preview = false; }
-}
-if (!$preview) track_visit('landing', $loggedIn ? (int) $_SESSION['uid'] : null);
-if ($preview) header('X-Robots-Tag: noindex');
-
-$S = site_content($preview);
-$g = $S['general'];
-$loginUrl = 'sign-in';
-$dashUrl = 'dashboard/';
-$portalUrl = $loggedIn ? $dashUrl : $loginUrl;
-$portalLabel = $loggedIn ? 'Go to Dashboard' : 'Login';
-
-function v(string $path): string
-{
-    $f = __DIR__ . '/' . $path;
-    return $path . '?v=' . (is_file($f) ? filemtime($f) : 1);
-}
-/** Uploaded image (file route) or the bundled default. */
-function img(?string $stored, string $default): string
-{
-    return $stored ? file_url($stored) : v($default);
-}
-
-$wa = preg_replace('/\D+/', '', (string) $g['whatsapp']);
-$demoUrl = $S['hero']['demo_url'] !== '' ? site_href($S['hero']['demo_url']) : 'https://wa.me/' . $wa . '?text=' . rawurlencode((string) $g['demo_message']);
-$telHref = 'tel:' . preg_replace('/[^\d+]/', '', (string) $g['phone']);
-$t = fn($s) => e((string) $s); // all managed text is escaped
-$initials = fn(string $name) => implode('', array_map(fn($w) => mb_substr($w, 0, 1), array_slice(preg_split('/\s+/', trim(preg_replace('/^(Mr|Ms|Mrs|Dr)\.?\s+/i', '', $name))), 0, 2)));
-$hidden = array_flip($S['layout']['hidden']);
-?>
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="h-full">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?= $t($S['seo']['title']) ?></title>
-  <meta name="description" content="<?= $t($S['seo']['description']) ?>">
-  <meta name="theme-color" content="<?= preg_match('/^#[0-9a-f]{3,8}$/i', (string) $S['seo']['theme_color']) ? $S['seo']['theme_color'] : '#07142a' ?>">
-  <?php if ($preview): ?><meta name="robots" content="noindex"><?php endif; ?>
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="<?= $t($S['seo']['og_title']) ?>">
-  <meta property="og:description" content="<?= $t($S['seo']['og_description']) ?>">
-  <meta property="og:image" content="<?= e(img($S['seo']['og_image'], 'dashboard/assets/images/adorableIT_dark_logo.png')) ?>">
-  <link rel="icon" type="image/png" href="<?= v('dashboard/assets/images/adorableit-mark.png') ?>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="<?= v('dashboard/assets/css/bootstrap.min.css') ?>">
-  <link rel="stylesheet" href="<?= v('dashboard/assets/fonts/remix/remixicon.css') ?>">
-  <link rel="stylesheet" href="<?= v('dashboard/assets/css/landing.css') ?>">
-  <link rel="stylesheet" href="<?= v('dashboard/assets/css/home.css') ?>">
-  <script type="application/ld+json"><?= json_encode(['@context' => 'https://schema.org', '@type' => 'SoftwareApplication', 'name' => $g['product'], 'applicationCategory' => 'BusinessApplication',
-      'operatingSystem' => 'Web', 'description' => $S['seo']['description'], 'publisher' => ['@type' => 'Organization', 'name' => $g['company'], 'url' => $g['site_url']]], JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZVECA | Grand Diwali Launch - Next-Gen HRMS & CRM</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Cinzel:wght@600;700;900&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        cinzel: ['"Cinzel"', 'serif'],
+                    },
+                    colors: {
+                        obsidian: '#030611',
+                        midnight: '#070C1E',
+                        brandCyan: '#00E5FF',
+                        brandBlue: '#0072FF',
+                        festiveGold: '#FFD700',
+                        festiveAmber: '#FF8A00'
+                    },
+                    animation: {
+                        'mandala-spin': 'spin 90s linear infinite',
+                        'mandala-reverse': 'spinReverse 75s linear infinite',
+                        'flame-flicker': 'flameWiggle 1.8s ease-in-out infinite alternate',
+                        'beam-slide': 'beamSlide 2.6s linear infinite',
+                        'pulse-glow': 'pulseGlow 2.5s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        spinReverse: {
+                            '0%': { transform: 'rotate(360deg)' },
+                            '100%': { transform: 'rotate(0deg)' }
+                        },
+                        flameWiggle: {
+                            '0%': { transform: 'scale(1) skewX(-1.5deg)' },
+                            '50%': { transform: 'scale(1.08, 0.95) skewX(2deg)' },
+                            '100%': { transform: 'scale(0.96, 1.05) skewX(-1deg)' }
+                        },
+                        beamSlide: {
+                            '0%': { transform: 'translateX(-150%) skewX(-20deg)' },
+                            '100%': { transform: 'translateX(250%) skewX(-20deg)' }
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { filter: 'drop-shadow(0 0 20px rgba(0, 229, 255, 0.4))' },
+                            '50%': { filter: 'drop-shadow(0 0 40px rgba(255, 215, 0, 0.7)) drop-shadow(0 0 70px rgba(0, 114, 255, 0.5))' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background-color: #030611;
+            color: #F8FAFC;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            touch-action: manipulation;
+        }
+
+        /* Ambient Luxury Glass Surface */
+        .glass-card {
+            background: radial-gradient(120% 120% at 50% 10%, rgba(16, 26, 56, 0.65) 0%, rgba(4, 8, 22, 0.88) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 229, 255, 0.16);
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        /* Gold Foil Typography */
+        .text-festive-shimmer {
+            background: linear-gradient(135deg, #FFFFFF 0%, #FFF2A8 25%, #FFD700 50%, #FF9900 78%, #FF5500 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .text-brand-gradient {
+            background: linear-gradient(135deg, #FFFFFF 0%, #70E5FF 40%, #0084FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Master Launch CTA */
+        .epic-cta-btn {
+            background: linear-gradient(135deg, #0088FF 0%, #0052D4 30%, #FF8A00 70%, #FFD700 100%);
+            background-size: 250% 250%;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 0 40px rgba(0, 140, 255, 0.6), 0 0 80px rgba(255, 170, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+        .epic-cta-btn:hover {
+            transform: scale(1.03) translateY(-2px);
+            box-shadow: 0 0 65px rgba(0, 229, 255, 0.9), 0 0 110px rgba(255, 215, 0, 0.7);
+        }
+
+        /* Screen blast vibration */
+        .camera-blast-shake {
+            animation: cameraBlast 0.7s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+        @keyframes cameraBlast {
+            10%, 90% { transform: translate3d(-4px, 3px, 0) rotate(-0.5deg); }
+            20%, 80% { transform: translate3d(5px, -4px, 0) rotate(0.7deg); }
+            30%, 50%, 70% { transform: translate3d(-8px, 6px, 0) rotate(-1deg); }
+            40%, 60% { transform: translate3d(8px, -6px, 0) rotate(1deg); }
+        }
+
+        /* Dynamic SVG Shockwave Ring */
+        .shockwave-ring {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            border: 2px solid #FFD700;
+            box-shadow: 0 0 40px #00E5FF;
+            transform: translate(-50%, -50%) scale(0.1);
+            opacity: 1;
+            transition: transform 0.85s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.85s ease-out;
+            z-index: 9991;
+        }
+
+        #fxCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9989;
+        }
+    </style>
 </head>
-<body class="hx">
-<a class="skip-link" href="#main">Skip to content</a>
-<?php if ($preview): ?>
-<div class="site-preview-bar" role="status"><i class="ri-eye-line"></i> Preview of unpublished changes — visitors still see the published page. <a href="dashboard/site">Back to the editor</a></div>
-<?php endif; ?>
+<body id="viewportBody" class="flex flex-col justify-between h-screen w-screen overflow-hidden select-none relative bg-obsidian">
 
-<?php if ($S['announce']['enabled'] && trim((string) $S['announce']['text']) !== ''): ?>
-<div class="hx-announce">
-  <div class="container"><?php if ($S['announce']['pill'] !== ''): ?><span class="hx-pill"><?= $t($S['announce']['pill']) ?></span> <?php endif; ?><?= $t($S['announce']['text']) ?>
-    <?php if ($S['announce']['link_label'] !== ''): ?><a href="<?= e(site_href($S['announce']['link_url'])) ?>" <?= str_starts_with((string) $S['announce']['link_url'], '#tour') ? 'data-tab="perf"' : '' ?>><?= $t($S['announce']['link_label']) ?> <i class="ri-arrow-right-line"></i></a><?php endif; ?></div>
-</div>
-<?php endif; ?>
+    <!-- Pyrotechnics Canvas -->
+    <canvas id="fxCanvas"></canvas>
 
-<header class="lp-header" id="top">
-  <div class="container lp-nav">
-    <a class="lp-logo" href="./"><img src="<?= e(img($g['logo'], 'dashboard/assets/images/adorableIT_dark_logo.png')) ?>" alt="<?= $t($g['company']) ?>"></a>
-    <nav class="lp-menu" id="lpMenu" aria-label="Main">
-      <?php foreach ($S['nav']['links'] as $l): if (trim((string) ($l['label'] ?? '')) === '') continue; ?><a href="<?= e(site_href($l['href'] ?? '')) ?>"><?= $t($l['label']) ?></a><?php endforeach; ?>
-      <a class="lp-btn lp-btn-primary d-lg-none mt-2" href="<?= $portalUrl ?>"><?= $portalLabel ?></a>
-    </nav>
-    <div class="lp-actions">
-      <?php if ($S['nav']['jobs_button']): ?><a class="lp-btn lp-btn-ghost d-none d-xl-inline-flex" href="find-jobs"><i class="ri-briefcase-4-line"></i> <?= $t($S['nav']['jobs_label']) ?></a><?php endif; ?>
-      <a class="lp-btn lp-btn-primary lp-header-cta" href="<?= $portalUrl ?>"><i class="<?= $loggedIn ? 'ri-dashboard-3-line' : 'ri-login-circle-line' ?>"></i> <?= $portalLabel ?></a>
-      <button class="lp-burger d-lg-none" id="lpBurger" aria-label="Open menu" aria-expanded="false" aria-controls="lpMenu"><i class="ri-menu-3-line"></i></button>
+    <!-- Shockwave Expansion Target -->
+    <div id="shockwave" class="shockwave-ring hidden"></div>
+
+    <!-- ======================================================== -->
+    <!-- BACKGROUND SACRED MANDALA & LIGHTING INFRASTRUCTURE      -->
+    <!-- ======================================================== -->
+    <div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+        <!-- Giant Rotating Sacred Mandala Watermark -->
+        <svg class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] opacity-[0.06] animate-mandala-spin" viewBox="0 0 500 500" fill="none">
+            <circle cx="250" cy="250" r="230" stroke="#00E5FF" stroke-width="1.5" stroke-dasharray="8 8"/>
+            <circle cx="250" cy="250" r="180" stroke="#FFD700" stroke-width="1.5" stroke-dasharray="12 6"/>
+            <circle cx="250" cy="250" r="130" stroke="#0072FF" stroke-width="2"/>
+            <g stroke="#FFD700" stroke-width="1">
+                <path d="M250 20 L270 200 L480 250 L270 300 L250 480 L230 300 L20 250 L230 200 Z" />
+                <path d="M87 87 L220 220 L413 87 L280 250 L413 413 L250 280 L87 413 L220 250 Z" />
+            </g>
+        </svg>
+
+        <!-- Ambient Volumetric Glow Orbs -->
+        <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[650px] h-[360px] bg-gradient-to-b from-brandBlue/30 via-brandCyan/20 to-transparent rounded-full blur-[130px]"></div>
+        <div class="absolute -bottom-24 left-1/2 -translate-x-1/2 w-[720px] h-[320px] bg-gradient-to-t from-festiveAmber/25 via-festiveGold/15 to-transparent rounded-full blur-[140px]"></div>
     </div>
-  </div>
-</header>
 
-<main id="main">
-<?php foreach ($S['layout']['order'] as $sec): if (isset($hidden[$sec])) continue; $d = $S[$sec]; switch ($sec):
-case 'hero': ?>
-  <section class="hx-hero">
-    <div class="hx-hero-bg" aria-hidden="true"></div>
-    <div class="container position-relative">
-      <div class="row align-items-center g-5">
-        <div class="col-lg-6">
-          <?php if ($d['eyebrow'] !== ''): ?><span class="hx-eyebrow"><i class="ri-sparkling-2-fill"></i> <?= $t($d['eyebrow']) ?></span><?php endif; ?>
-          <h1><?= $t($d['title']) ?><?php if ($d['highlight'] !== ''): ?> <span class="hx-grad"><?= $t($d['highlight']) ?></span><?php endif; ?></h1>
-          <p class="hx-lead"><?= $t($d['lead']) ?></p>
-          <div class="hx-cta">
-            <a class="lp-btn lp-btn-primary lp-btn-lg" href="<?= $portalUrl ?>"><?= $t($loggedIn ? $d['cta_user'] : $d['cta_guest']) ?> <i class="ri-arrow-right-line"></i></a>
-            <?php if ($d['demo_label'] !== ''): ?><a class="lp-btn hx-btn-glass lp-btn-lg" href="<?= e($demoUrl) ?>" target="_blank" rel="noopener"><i class="ri-calendar-schedule-line"></i> <?= $t($d['demo_label']) ?></a><?php endif; ?>
-          </div>
-          <?php if ($d['checks']): ?><ul class="hx-checks"><?php foreach ($d['checks'] as $c): ?><li><i class="<?= site_icon($c['icon'] ?? '', 'ri-check-line') ?>"></i> <?= $t($c['text'] ?? '') ?></li><?php endforeach; ?></ul><?php endif; ?>
-        </div>
-        <div class="col-lg-6">
-          <div class="hx-visual">
-            <?php if ($d['image']): ?>
-              <img class="hx-hero-img" src="<?= e(file_url($d['image'])) ?>" alt="" loading="eager">
-            <?php else: ?>
-            <div class="lp-mock" aria-hidden="true">
-              <div class="lp-mock-bar"><span></span><span></span><span></span><em>hrms.adorableit.com/dashboard</em></div>
-              <div class="lp-mock-body">
-                <div class="lp-mock-hero">
-                  <div><small>Good morning,</small><b>Priya 👋</b><small class="op">Tuesday · Office 09:30 – 18:30</small></div>
-                  <div class="lp-mock-clock"><small>Worked today</small><b>4h 12m</b><span class="lp-mock-punch"><i class="ri-logout-circle-r-line"></i> Punch Out</span></div>
+    <!-- ======================================================== -->
+    <!-- 1. COMPACT TOP HEADER                                    -->
+    <!-- ======================================================== -->
+    <header class="w-full px-4 sm:px-8 py-3.5 flex items-center justify-between border-b border-white/10 glass-card z-30">
+        <!-- Brand Signature (Vector Ribbon Match) -->
+        <a href="https://zveca.com/" class="flex items-center gap-3 group">
+            <div class="relative w-9 h-9 rounded-xl bg-gradient-to-br from-brandCyan via-brandBlue to-indigo-700 p-[1.5px] shadow-lg shadow-brandCyan/30">
+                <div class="w-full h-full bg-[#05091B] rounded-[10px] flex items-center justify-center">
+                    <span class="text-brandCyan font-black text-base tracking-tighter group-hover:scale-110 transition-transform">Z↗</span>
                 </div>
-                <div class="lp-mock-stats">
-                  <div><i class="ri-user-follow-line c1"></i><b>42</b><small>Present</small></div>
-                  <div><i class="ri-hourglass-2-line c3"></i><b>3</b><small>Probation due</small></div>
-                  <div><i class="ri-star-smile-line c2"></i><b>4.3</b><small>Avg rating</small></div>
+            </div>
+            <div class="flex flex-col">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl font-black tracking-tight text-white font-sans">ZVECA</span>
+                    <span class="text-[9px] px-2 py-0.5 rounded-full bg-brandCyan/20 text-brandCyan font-bold tracking-wider border border-brandCyan/40 uppercase">AI Cloud</span>
                 </div>
-                <div class="lp-mock-grid">
-                  <div class="lp-mock-card"><small>Goals & KPIs</small>
-                    <div class="hx-mini-goal"><span>Ship billing v2</span><i style="--w:78%"></i></div><div class="hx-mini-goal"><span>AWS certification</span><i style="--w:45%"></i></div><div class="hx-mini-goal"><span>Client NPS 60+</span><i style="--w:92%"></i></div></div>
-                  <div class="lp-mock-card"><small>Leave requests</small>
-                    <div class="lp-row"><span class="av a1">RM</span><span>Rahul · CL 2d</span><em class="ok">✓</em></div><div class="lp-row"><span class="av a2">NG</span><span>Neha · SL 1d</span><em class="pd">•</em></div><div class="lp-row"><span class="av a3">AK</span><span>Amit · EL 3d</span><em class="ok">✓</em></div></div>
+                <span class="text-[9px] text-gray-400 font-medium tracking-wide">Next-Gen HRMS & CRM Platform</span>
+            </div>
+        </a>
+
+        <!-- Shubh Deepawali Edition Pill -->
+        <div class="hidden md:flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-festiveAmber/20 via-festiveGold/10 to-brandCyan/15 border border-festiveGold/40 text-xs font-semibold text-festiveGold shadow-md">
+            <span class="w-2 h-2 rounded-full bg-festiveGold animate-ping"></span>
+            <span class="font-cinzel tracking-wider">Shubh Aarambh 2026</span>
+            <span class="text-gray-400">•</span>
+            <span class="text-gray-200">Diwali Enterprise Release</span>
+        </div>
+
+        <!-- Audio Toggle & Official Link -->
+        <div class="flex items-center gap-3">
+            <button id="soundBtn" onclick="toggleSoundFX()" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/15 hover:border-festiveGold/60 text-xs font-medium text-gray-200 transition-all hover:bg-white/10">
+                <span id="soundEmoji" class="text-sm">🔊</span>
+                <span id="soundStatus" class="text-[11px] uppercase tracking-wider text-festiveGold font-bold">Sound: ON</span>
+            </button>
+            <a href="https://zveca.com/" class="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-gray-300 hover:text-brandCyan transition-colors">
+                <span>zveca.com</span>
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- ======================================================== -->
+    <!-- 2. CENTRAL HERO ZONE (100vh Single Screen Viewport)     -->
+    <!-- ======================================================== -->
+    <main class="flex-1 flex flex-col items-center justify-center text-center px-4 max-w-5xl mx-auto w-full relative z-20 my-auto">
+        
+        <!-- Flanking Traditional Diyas (Desktop) -->
+        <div class="hidden lg:flex items-center justify-between w-full absolute inset-x-0 pointer-events-none px-6">
+            <!-- Left Royal Diya -->
+            <div class="flex flex-col items-center">
+                <svg class="w-14 h-14 filter drop-shadow-[0_0_16px_rgba(255,170,0,0.85)]" viewBox="0 0 64 64" fill="none">
+                    <path class="origin-bottom animate-flame-flicker" d="M32 3C32 3 20 19 20 28C20 34.6 25.4 40 32 40C38.6 40 44 34.6 44 28C44 19 32 3 32 3Z" fill="url(#flameGradLeft)"/>
+                    <path d="M10 38C10 50 20 56 32 56C44 56 54 50 54 38H10Z" fill="url(#diyaBodyLeft)"/>
+                    <ellipse cx="32" cy="38" rx="22" ry="4.5" fill="#B45309"/>
+                    <defs>
+                        <radialGradient id="flameGradLeft" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(32 26) scale(14)">
+                            <stop stop-color="#FFFFFF"/>
+                            <stop offset="0.3" stop-color="#FFEB3B"/>
+                            <stop offset="0.7" stop-color="#FF9800"/>
+                            <stop offset="1" stop-color="#E65100"/>
+                        </radialGradient>
+                        <linearGradient id="diyaBodyLeft" x1="10" y1="38" x2="54" y2="56" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#F59E0B"/>
+                            <stop offset="1" stop-color="#78350F"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span class="text-[10px] font-cinzel font-bold text-festiveGold mt-1.5 uppercase tracking-widest">Lakshmi Kripa</span>
+            </div>
+
+            <!-- Right Royal Diya -->
+            <div class="flex flex-col items-center">
+                <svg class="w-14 h-14 filter drop-shadow-[0_0_16px_rgba(255,170,0,0.85)]" viewBox="0 0 64 64" fill="none">
+                    <path class="origin-bottom animate-flame-flicker" style="animation-delay: 0.9s;" d="M32 3C32 3 20 19 20 28C20 34.6 25.4 40 32 40C38.6 40 44 34.6 44 28C44 19 32 3 32 3Z" fill="url(#flameGradLeft)"/>
+                    <path d="M10 38C10 50 20 56 32 56C44 56 54 50 54 38H10Z" fill="url(#diyaBodyLeft)"/>
+                    <ellipse cx="32" cy="38" rx="22" ry="4.5" fill="#B45309"/>
+                </svg>
+                <span class="text-[10px] font-cinzel font-bold text-brandCyan mt-1.5 uppercase tracking-widest">Shubh Labh</span>
+            </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- HIGH-ACCURACY 3D RIBBON LOGO EMBLEM (Matches Image)     -->
+        <!-- ======================================================== -->
+        <div class="mb-3 transform hover:scale-105 transition-transform duration-300">
+            <div class="relative flex items-center justify-center">
+                <!-- Dual Glowing Backing Aura -->
+                <div class="absolute inset-0 bg-gradient-to-r from-brandCyan via-brandBlue to-festiveGold blur-3xl opacity-50 rounded-full animate-pulse-glow"></div>
+
+                <!-- Glass Platform Showcase -->
+                <div class="relative py-3.5 px-8 sm:px-12 rounded-3xl glass-card border border-brandCyan/40 shadow-2xl flex items-center justify-center">
+                    <!-- Vector Recreation of ZVECA 3D Ribbon + Soaring Arrow -->
+                    <svg class="w-64 sm:w-80 md:w-96 h-14 sm:h-18 md:h-20" viewBox="0 0 460 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="ribbonCyanPrimary" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#00F0FF"/>
+                                <stop offset="45%" stop-color="#0080FF"/>
+                                <stop offset="100%" stop-color="#003580"/>
+                            </linearGradient>
+                            <linearGradient id="ribbonDarkFold" x1="100%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#002D6B"/>
+                                <stop offset="60%" stop-color="#001438"/>
+                                <stop offset="100%" stop-color="#004C99"/>
+                            </linearGradient>
+                            <linearGradient id="arrowGlowGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#0072FF"/>
+                                <stop offset="60%" stop-color="#00D2FF"/>
+                                <stop offset="100%" stop-color="#FFFFFF"/>
+                            </linearGradient>
+                            <filter id="vectorDropShadow" x="-10%" y="-10%" width="130%" height="130%">
+                                <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000000" flood-opacity="0.7"/>
+                            </filter>
+                        </defs>
+
+                        <!-- 'Z' Outer Ribbon Structure -->
+                        <path d="M15 18 H95 L45 82 H125 V94 H12 L62 30 H15 V18 Z" fill="url(#ribbonCyanPrimary)" filter="url(#vectorDropShadow)"/>
+                        <!-- 'Z' Inner Fold Shadow -->
+                        <path d="M45 82 L72 48 L62 30 L28 72 Z" fill="url(#ribbonDarkFold)"/>
+
+                        <!-- 'V' & 'E' Continuous Curving Silk Ribbon Loop -->
+                        <path d="M135 25 C150 25 165 48 180 72 C192 48 205 25 220 25 C238 25 235 60 235 72 C235 88 252 90 270 70 L278 78 C252 108 220 102 218 72 C217 50 202 40 190 40 C176 40 165 62 155 85 H132 L162 25 Z" fill="url(#ribbonCyanPrimary)" filter="url(#vectorDropShadow)"/>
+                        <path d="M180 72 C172 58 165 45 155 45 C145 45 140 55 138 65 L132 85 H148 C158 68 168 55 178 52 Z" fill="url(#ribbonDarkFold)"/>
+
+                        <!-- 'C' Sweeping Cylinder Arc -->
+                        <path d="M335 24 C298 24 274 44 274 70 C274 94 300 94 320 86 L325 94 C298 104 256 102 256 70 C256 36 290 16 335 16 C352 16 364 22 372 30 L360 38 C354 30 346 24 335 24 Z" fill="url(#ribbonCyanPrimary)" filter="url(#vectorDropShadow)"/>
+
+                        <!-- 'A' Base Structure -->
+                        <path d="M370 94 L404 36 L424 72 C406 78 384 82 370 94 Z" fill="url(#ribbonCyanPrimary)"/>
+
+                        <!-- The Signature Soaring Arrow Bursting from 'A' -->
+                        <path d="M352 86 C376 78 412 68 434 40 L425 35 L456 22 L452 56 L442 46 C416 78 376 90 352 86 Z" fill="url(#arrowGlowGrad)" filter="url(#vectorDropShadow)"/>
+                    </svg>
                 </div>
-              </div>
             </div>
-            <?php endif; ?>
-            <?php foreach (array_slice($d['floats'], 0, 3) as $i => $f): ?><div class="lp-float hx-float-<?= $i + 1 ?>"><i class="<?= site_icon($f['icon'] ?? '') ?>"></i><div><b><?= $t($f['title'] ?? '') ?></b><small><?= $t($f['sub'] ?? '') ?></small></div></div><?php endforeach; ?>
-          </div>
         </div>
-      </div>
-    </div>
-  </section>
-<?php break; case 'marquee': if (!$d['items']) break; ?>
-  <section class="hx-marquee" aria-label="Modules included">
-    <div class="hx-marquee-track">
-      <?php for ($i = 0; $i < 2; $i++): ?><div class="hx-marquee-group" <?= $i ? 'aria-hidden="true"' : '' ?>><?php foreach ($d['items'] as $m): ?><span><i class="ri-checkbox-blank-circle-fill"></i><?= $t($m['text'] ?? '') ?></span><?php endforeach; ?></div><?php endfor; ?>
-    </div>
-  </section>
-<?php break; case 'stats': if (!$d['items']) break; ?>
-  <section class="hx-stats">
-    <div class="container"><div class="hx-stats-grid">
-      <?php foreach ($d['items'] as $st): $num = !empty($st['animate']) && ctype_digit((string) ($st['value'] ?? '')); ?>
-        <div><strong<?= $num ? ' data-count="' . (int) $st['value'] . '"' : '' ?>><?= $t($st['value'] ?? '') ?></strong><?= ($st['suffix'] ?? '') !== '' ? '<em>' . $t($st['suffix']) . '</em>' : '' ?><span><?= $t($st['label'] ?? '') ?></span></div>
-      <?php endforeach; ?>
-    </div></div>
-  </section>
-<?php break; case 'tour': if (!$d['tabs']) break; ?>
-  <section class="lp-section" id="tour">
-    <div class="container">
-      <div class="lp-head"><span class="lp-kicker"><?= $t($d['kicker']) ?></span><h2><?= $t($d['title']) ?></h2><p><?= $t($d['text']) ?></p></div>
-      <div class="hx-tabs" role="tablist" aria-label="Product areas">
-        <?php foreach ($d['tabs'] as $i => $tb): $key = $i === 3 ? 'perf' : 't' . $i; ?>
-          <button class="hx-tab<?= $i === 0 ? ' active' : '' ?>" role="tab" id="tab-<?= $key ?>" aria-controls="panel-<?= $key ?>" aria-selected="<?= $i === 0 ? 'true' : 'false' ?>" tabindex="<?= $i === 0 ? '0' : '-1' ?>" data-tab="<?= $key ?>"><i class="<?= site_icon($tb['icon'] ?? '') ?>"></i><?= $t($tb['label'] ?? '') ?></button>
-        <?php endforeach; ?>
-      </div>
-      <?php foreach ($d['tabs'] as $i => $tb): $key = $i === 3 ? 'perf' : 't' . $i; ?>
-        <div class="hx-panel" role="tabpanel" id="panel-<?= $key ?>" aria-labelledby="tab-<?= $key ?>" <?= $i === 0 ? '' : 'hidden' ?>>
-          <div class="row g-4 g-lg-5 align-items-center">
-            <div class="col-lg-6">
-              <h3 class="hx-panel-title"><?= $t($tb['title'] ?? '') ?></h3>
-              <ul class="hx-points"><?php foreach (array_filter(array_map('trim', preg_split('/\r?\n/', (string) ($tb['points'] ?? '')))) as $p): ?><li><i class="ri-check-line"></i><?= $t($p) ?></li><?php endforeach; ?></ul>
-              <a class="lp-btn lp-btn-primary" href="<?= $portalUrl ?>"><?= $t($d['button']) ?> <i class="ri-arrow-right-line"></i></a>
-            </div>
-            <div class="col-lg-6">
-              <div class="hx-screen">
-                <div class="hx-screen-head"><span class="lp-icon"><i class="<?= site_icon($tb['icon'] ?? '') ?>"></i></span><div><b><?= $t($tb['label'] ?? '') ?></b><small>Live activity</small></div></div>
-                <?php foreach (array_filter(array_map('trim', preg_split('/\r?\n/', (string) ($tb['rows'] ?? '')))) as $row): $p = array_map('trim', explode('|', $row)) + ['', '', '', '']; ?>
-                  <div class="hx-screen-row"><i class="<?= site_icon($p[0]) ?>"></i><div><b><?= $t($p[1]) ?></b><small><?= $t($p[2]) ?></small></div><?= $p[3] !== '' ? '<span class="hx-tag">' . $t($p[3]) . '</span>' : '' ?></div>
-                <?php endforeach; ?>
-              </div>
-            </div>
-          </div>
+
+        <!-- Headline & Typography -->
+        <h1 class="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-tight mb-2 font-sans">
+            Ignite Exponential Enterprise Scale With <br class="hidden sm:inline">
+            <span class="text-festive-shimmer">ZVECA Unified Cloud</span>
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="text-xs sm:text-base text-gray-300 max-w-2xl mx-auto font-normal leading-relaxed mb-3">
+            One powerhouse ecosystem unifying <strong class="text-brandCyan font-semibold">1-Click Payroll</strong>, <strong class="text-festiveGold font-semibold">Predictive Sales CRM</strong>, and <strong class="text-white font-semibold">Autonomous HR Workflows</strong>.
+        </p>
+
+        <!-- Exclusive Festive Offer Pill -->
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-festiveGold/10 border border-festiveGold/40 text-festiveGold text-[11px] sm:text-xs font-semibold mb-5 shadow-sm">
+            <span class="text-sm">🪔</span>
+            <span>Diwali Special: Claim 3 Months Complimentary Cloud Access on Launch Day</span>
         </div>
-      <?php endforeach; ?>
-    </div>
-  </section>
-<?php break; case 'lifecycle': ?>
-  <section class="lp-section lp-tint hx-life">
-    <div class="container">
-      <div class="lp-head"><span class="lp-kicker"><?= $t($d['kicker']) ?></span><h2><?= $t($d['title']) ?></h2><p><?= $t($d['text']) ?></p></div>
-      <?php if ($d['steps']): ?><ol class="hx-timeline"><?php foreach ($d['steps'] as $i => $s): ?><li><span class="hx-node"><i class="<?= site_icon($s['icon'] ?? '') ?>"></i></span><b><?= $i + 1 ?>. <?= $t($s['title'] ?? '') ?></b><small><?= $t($s['text'] ?? '') ?></small></li><?php endforeach; ?></ol><?php endif; ?>
-      <?php if ($d['spot_title'] !== ''): ?>
-      <div class="hx-probation">
-        <div class="hx-probation-text"><?php if ($d['spot_pill'] !== ''): ?><span class="hx-pill hx-pill-soft"><?= $t($d['spot_pill']) ?></span><?php endif; ?><h3><?= $t($d['spot_title']) ?></h3><p><?= $t($d['spot_text']) ?></p></div>
-        <div class="hx-probation-cards"><?php foreach (array_slice($d['cards'], 0, 2) as $i => $c): ?><div class="hx-prob<?= $i ? ' hx-prob-alt' : '' ?>"><i class="<?= site_icon($c['icon'] ?? '') ?>"></i><strong><?= $t($c['value'] ?? '') ?></strong><span><?= $t($c['label'] ?? '') ?></span><small><?= $t($c['sub'] ?? '') ?></small></div><?php endforeach; ?></div>
-      </div>
-      <?php endif; ?>
-    </div>
-  </section>
-<?php break; case 'features': ?>
-  <section class="lp-section" id="features">
-    <div class="container">
-      <div class="lp-head"><span class="lp-kicker"><?= $t($d['kicker']) ?></span><h2><?= $t($d['title']) ?></h2><p><?= $t($d['text']) ?></p></div>
-      <div class="hx-bento"><?php foreach ($d['items'] as $f): ?>
-        <div class="lp-card hx-feature<?= ($f['style'] ?? '') === 'wide' ? ' hx-wide' : '' ?>"><span class="lp-icon"><i class="<?= site_icon($f['icon'] ?? '') ?>"></i></span><h3><?= $t($f['title'] ?? '') ?><?= ($f['style'] ?? '') === 'new' ? ' <span class="hx-pill">New</span>' : '' ?></h3><p><?= $t($f['text'] ?? '') ?></p></div>
-      <?php endforeach; ?></div>
-    </div>
-  </section>
-<?php break; case 'pricing': ?>
-  <section class="lp-section pr-home" id="pricing">
-    <div class="container">
-      <div class="lp-head"><span class="lp-kicker"><?= $t($d['kicker']) ?></span><h2><?= $t($d['title']) ?></h2><p><?= $t($d['text']) ?></p></div>
-      <?= pricing_cards() ?>
-      <?php if ($d['link_label'] !== ''): ?><div class="text-center mt-3"><a class="lp-link" href="pricing#compare"><?= $t($d['link_label']) ?> <i class="ri-arrow-right-line"></i></a></div><?php endif; ?>
-    </div>
-  </section>
-<?php break; case 'roles': ?>
-  <section class="lp-section lp-tint" id="roles">
-    <div class="container"><div class="row g-5 align-items-center">
-      <div class="col-lg-4"><span class="lp-kicker"><?= $t($d['kicker']) ?></span><h2 class="lp-h2"><?= $t($d['title']) ?></h2><p class="lp-muted"><?= $t($d['text']) ?></p>
-        <a class="lp-btn lp-btn-primary mt-2" href="<?= $portalUrl ?>"><?= $t($loggedIn ? $d['button_user'] : $d['button_guest']) ?> <i class="ri-arrow-right-line"></i></a></div>
-      <div class="col-lg-8"><div class="hx-roles"><?php foreach ($d['items'] as $r): ?><div class="hx-role"><i class="<?= site_icon($r['icon'] ?? '') ?>"></i><div><b><?= $t($r['title'] ?? '') ?></b><small><?= $t($r['text'] ?? '') ?></small></div></div><?php endforeach; ?></div></div>
-    </div></div>
-  </section>
-<?php break; case 'security': ?>
-  <section class="lp-section lp-dark hx-security" id="security">
-    <div class="container">
-      <div class="lp-head"><span class="lp-kicker"><?= $t($d['kicker']) ?></span><h2><?= $t($d['title']) ?></h2><p><?= $t($d['text']) ?></p></div>
-      <div class="lp-grid-3"><?php foreach ($d['items'] as $s): ?><div class="hx-sec"><span class="lp-icon"><i class="<?= site_icon($s['icon'] ?? '') ?>"></i></span><h3><?= $t($s['title'] ?? '') ?></h3><p><?= $t($s['text'] ?? '') ?></p></div><?php endforeach; ?></div>
-    </div>
-  </section>
-<?php break; case 'services': ?>
-  <section class="lp-section" id="services">
-    <div class="container">
-      <div class="lp-head"><span class="lp-kicker"><?= $t($d['kicker']) ?></span><h2><?= $t($d['title']) ?></h2><p><?= $t($d['text']) ?></p></div>
-      <div class="lp-grid-3"><?php foreach ($d['items'] as $s): ?><div class="lp-card lp-service"><span class="lp-icon"><i class="<?= site_icon($s['icon'] ?? '') ?>"></i></span><div><h3><?= $t($s['title'] ?? '') ?></h3><p><?= $t($s['text'] ?? '') ?></p></div></div><?php endforeach; ?></div>
-      <?php if ($d['it_items']): ?>
-      <div class="hx-it"><div class="hx-it-head"><b><?= $t($d['it_title']) ?></b><span><?= $t($d['it_text']) ?></span></div>
-        <div class="hx-it-chips"><?php foreach ($d['it_items'] as $s): ?><span><i class="<?= site_icon($s['icon'] ?? '') ?>"></i><?= $t($s['title'] ?? '') ?></span><?php endforeach; ?>
-          <?php if ($d['quote_label'] !== ''): ?><a href="<?= e(site_href($d['quote_url'])) ?>" target="_blank" rel="noopener"><i class="ri-chat-quote-line"></i><?= $t($d['quote_label']) ?></a><?php endif; ?></div></div>
-      <?php endif; ?>
-    </div>
-  </section>
-<?php break; case 'about': ?>
-  <section class="lp-section lp-tint" id="about">
-    <div class="container"><div class="row g-5">
-      <div class="col-lg-4"><span class="lp-kicker"><?= $t($d['kicker']) ?></span><h2 class="lp-h2"><?= $t($d['title']) ?></h2><p class="lp-muted"><?= $t($d['text']) ?></p>
-        <?php if ($d['team']): ?><div class="lp-team"><?php foreach ($d['team'] as $m): ?><div><b><?= $t($m['name'] ?? '') ?></b><small><?= $t($m['role'] ?? '') ?></small></div><?php endforeach; ?></div><?php endif; ?></div>
-      <div class="col-lg-8"><div class="hx-quotes"><?php foreach ($d['testimonials'] as $q): $stars = max(1, min(5, (int) ($q['rating'] ?? 5))); ?>
-        <figure class="lp-card lp-quote">
-          <div class="hx-stars" aria-label="<?= $stars ?> out of 5"><?= str_repeat('<i class="ri-star-fill"></i>', $stars) ?></div>
-          <blockquote><?= $t($q['quote'] ?? '') ?></blockquote>
-          <figcaption><span class="av"><?= $t($initials((string) ($q['name'] ?? ''))) ?></span><div><b><?= $t($q['name'] ?? '') ?></b><small><?= $t($q['role'] ?? '') ?></small></div></figcaption>
-        </figure>
-      <?php endforeach; ?></div></div>
-    </div></div>
-  </section>
-<?php break; case 'faq': if (!$d['items']) break; ?>
-  <section class="lp-section" id="faq">
-    <div class="container">
-      <div class="lp-head"><span class="lp-kicker"><?= $t($d['kicker']) ?></span><h2><?= $t($d['title']) ?></h2></div>
-      <div class="hx-faq"><?php foreach ($d['items'] as $i => $f): ?><details <?= $i === 0 ? 'open' : '' ?>><summary><?= $t($f['q'] ?? '') ?><i class="ri-add-line"></i></summary><p><?= nl2br($t($f['a'] ?? '')) ?></p></details><?php endforeach; ?></div>
-    </div>
-  </section>
-<?php break; case 'cta': ?>
-  <section class="lp-cta-band">
-    <div class="container"><div class="lp-cta-box hx-cta-box">
-      <div><h2><?= $t($d['title']) ?></h2><p><?= $t($d['text']) ?></p></div>
-      <div class="d-flex gap-2 flex-wrap">
-        <a class="lp-btn lp-btn-light lp-btn-lg" href="<?= $portalUrl ?>"><i class="<?= $loggedIn ? 'ri-dashboard-3-line' : 'ri-login-circle-line' ?>"></i> <?= $t($loggedIn ? $d['button_user'] : $d['button_guest']) ?></a>
-        <?php if ($d['demo_label'] !== ''): ?><a class="lp-btn lp-btn-outline-light lp-btn-lg" href="<?= e($demoUrl) ?>" target="_blank" rel="noopener"><i class="ri-whatsapp-line"></i> <?= $t($d['demo_label']) ?></a><?php endif; ?>
-      </div>
-    </div></div>
-  </section>
-<?php break; case 'contact': ?>
-  <section class="lp-section" id="contact">
-    <div class="container">
-      <div class="lp-head"><span class="lp-kicker"><?= $t($d['kicker']) ?></span><h2><?= $t($d['title']) ?></h2><p><?= $t($d['text']) ?></p></div>
-      <div class="lp-grid-4">
-        <?php if ($g['address'] !== ''): ?><a class="lp-card lp-contact" href="<?= e(site_href($g['map_url'])) ?>" target="_blank" rel="noopener"><span class="lp-icon"><i class="ri-map-pin-2-line"></i></span><h3>Visit us</h3><p><?= $t($g['address']) ?></p></a><?php endif; ?>
-        <?php if ($g['phone'] !== ''): ?><a class="lp-card lp-contact" href="<?= e($telHref) ?>"><span class="lp-icon"><i class="ri-phone-line"></i></span><h3>Call us</h3><p><?= $t($g['phone']) ?></p></a><?php endif; ?>
-        <?php if ($g['email'] !== ''): ?><a class="lp-card lp-contact" href="mailto:<?= e($g['email']) ?>"><span class="lp-icon"><i class="ri-mail-line"></i></span><h3>E-mail us</h3><p><?= $t($g['email']) ?></p></a><?php endif; ?>
-        <?php if ($wa !== ''): ?><a class="lp-card lp-contact lp-contact-wa" href="https://wa.me/<?= $wa ?>" target="_blank" rel="noopener"><span class="lp-icon"><i class="ri-whatsapp-line"></i></span><h3>WhatsApp</h3><p>Chat instantly on <?= $t($g['phone']) ?></p></a><?php endif; ?>
-      </div>
-    </div>
-  </section>
-<?php break; endswitch; endforeach; ?>
-</main>
 
-<footer class="lp-footer">
-  <div class="container">
-    <div class="row g-4">
-      <div class="col-lg-4">
-        <img class="lp-footer-logo" src="<?= e(img($g['footer_logo'], 'dashboard/assets/images/adorableit-logo-light.png')) ?>" alt="<?= $t($g['company']) ?>">
-        <p><?= $t($S['footer']['text']) ?></p>
-        <div class="lp-social"><?php foreach ($S['footer']['socials'] as $s): ?><a href="<?= e(site_href($s['url'] ?? '')) ?>" target="_blank" rel="noopener" aria-label="<?= $t($s['label'] ?? '') ?>"><i class="<?= site_icon($s['icon'] ?? '', 'ri-links-line') ?>"></i></a><?php endforeach; ?></div>
-      </div>
-      <div class="col-6 col-lg-2"><h4><?= $t($S['footer']['col1']) ?></h4><?php foreach ($S['footer']['links1'] as $l): ?><a href="<?= e(site_href($l['href'] ?? '')) ?>"><?= $t($l['label'] ?? '') ?></a><?php endforeach; ?></div>
-      <div class="col-6 col-lg-2"><h4><?= $t($S['footer']['col2']) ?></h4><?php foreach ($S['footer']['links2'] as $l): $ext = preg_match('#^https?://#', (string) ($l['href'] ?? '')); ?><a href="<?= e(site_href($l['href'] ?? '')) ?>"<?= $ext ? ' target="_blank" rel="noopener"' : '' ?>><?= $t($l['label'] ?? '') ?></a><?php endforeach; ?></div>
-      <div class="col-lg-4">
-        <h4><?= $t($S['footer']['col3']) ?></h4>
-        <?php if ($g['address'] !== ''): ?><p class="mb-2"><i class="ri-map-pin-2-line"></i> <?= $t($g['address']) ?></p><?php endif; ?>
-        <?php if ($g['phone'] !== ''): ?><p class="mb-2"><i class="ri-phone-line"></i> <a class="d-inline" href="<?= e($telHref) ?>"><?= $t($g['phone']) ?></a></p><?php endif; ?>
-        <?php if ($wa !== ''): ?><p class="mb-2"><i class="ri-whatsapp-line"></i> <a class="d-inline" href="https://wa.me/<?= $wa ?>" target="_blank" rel="noopener">WhatsApp us</a></p><?php endif; ?>
-        <?php if ($g['email'] !== ''): ?><p class="mb-2"><i class="ri-mail-line"></i> <a class="d-inline" href="mailto:<?= e($g['email']) ?>"><?= $t($g['email']) ?></a></p><?php endif; ?>
-        <?php if ($g['site_url'] !== ''): ?><p><i class="ri-global-line"></i> <a class="d-inline" href="<?= e(site_href($g['site_url'])) ?>" target="_blank" rel="noopener"><?= $t(preg_replace('#^https?://#', '', rtrim((string) $g['site_url'], '/'))) ?></a></p><?php endif; ?>
-      </div>
+        <!-- ======================================================== -->
+        <!-- MASTER LAUNCH BUTTON (EXPLOSIVE DHAMAKA TRIGGER)         -->
+        <!-- ======================================================== -->
+        <div class="relative my-1">
+            <!-- Pulsing Ambient Underglow -->
+            <div class="absolute -inset-2 bg-gradient-to-r from-festiveGold via-festiveAmber to-brandCyan rounded-2xl blur-xl opacity-75 animate-pulse"></div>
+
+            <button
+                id="masterDhamakaBtn"
+                onclick="executeDhamakaLaunch(event)"
+                class="relative epic-cta-btn text-white font-black text-base sm:text-xl md:text-2xl px-8 sm:px-14 py-4 sm:py-5 rounded-2xl flex items-center justify-center gap-3 border-2 border-festiveGold/80 cursor-pointer active:scale-95 transition-all overflow-hidden group shadow-2xl"
+            >
+                <!-- Shimmer beam line -->
+                <div class="absolute top-0 left-0 w-1/3 h-full bg-white/30 -skew-x-12 animate-beam-slide pointer-events-none"></div>
+
+                <span class="text-2xl animate-bounce">🪔</span>
+                <span class="tracking-wider uppercase drop-shadow-md text-white font-sans">
+                    Launch ZVECA Ecosystem (धमाका शुरुआत)
+                </span>
+                <span class="text-2xl">💥</span>
+            </button>
+        </div>
+
+        <!-- Interactive Hint -->
+        <p class="text-[11px] sm:text-xs text-brandCyan/90 font-medium mt-3 flex items-center justify-center gap-1.5">
+            <span>⚡ Detonates celebratory fireworks & auto-redirects to</span>
+            <a href="https://zveca.com/" class="text-festiveGold font-bold underline hover:text-white transition-colors">https://zveca.com/</a>
+        </p>
+
+    </main>
+
+    <!-- ======================================================== -->
+    <!-- 3. COMPACT FOOTER DOCK (100vh Single Screen Viewport)     -->
+    <!-- ======================================================== -->
+    <footer class="w-full px-4 sm:px-8 py-3 glass-card border-t border-white/10 z-30">
+        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+            
+            <!-- Core Capabilities Summary -->
+            <div class="flex flex-wrap items-center gap-4 sm:gap-8 text-gray-300 mx-auto md:mx-0">
+                <div class="flex items-center gap-1.5 font-semibold hover:text-festiveGold transition-colors">
+                    <span class="text-festiveGold">⚡</span>
+                    <span>Automated Payroll & Tax</span>
+                </div>
+                <div class="flex items-center gap-1.5 font-semibold hover:text-brandCyan transition-colors">
+                    <span class="text-brandCyan">🎯</span>
+                    <span>High-Velocity Sales CRM</span>
+                </div>
+                <div class="flex items-center gap-1.5 font-semibold hover:text-emerald-400 transition-colors">
+                    <span class="text-emerald-400">📍</span>
+                    <span>Geo-Fence Biometrics</span>
+                </div>
+                <div class="flex items-center gap-1.5 font-semibold hover:text-indigo-400 transition-colors">
+                    <span class="text-indigo-400">🤖</span>
+                    <span>Autonomous AI Co-Pilot</span>
+                </div>
+            </div>
+
+            <!-- Enterprise Trust Certifications -->
+            <div class="hidden lg:flex items-center gap-2.5 text-[11px] text-gray-400 font-mono">
+                <span class="px-2.5 py-0.5 rounded bg-white/5 border border-white/10">SOC-2 Type II</span>
+                <span class="px-2.5 py-0.5 rounded bg-white/5 border border-white/10">ISO 27001</span>
+                <span class="px-2.5 py-0.5 rounded bg-white/5 border border-white/10">99.99% Uptime</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ======================================================== -->
+    <!-- 4. CELEBRATION CLIMAX MODAL & 3-SEC REDIRECTION PORTAL    -->
+    <!-- ======================================================== -->
+    <div id="celebrationModal" class="fixed inset-0 bg-black/92 backdrop-blur-2xl z-[9999] hidden flex-col items-center justify-center p-4">
+        <div class="relative max-w-md w-full glass-card p-8 rounded-3xl border-2 border-festiveGold/80 text-center shadow-[0_0_120px_rgba(0,229,255,0.4)]">
+            
+            <!-- Festive Emoticons -->
+            <div class="text-4xl mb-2 animate-bounce">🎇🪔💥</div>
+
+            <h3 class="text-2xl sm:text-3xl font-black text-festive-shimmer font-cinzel uppercase tracking-wider mb-1">
+                BOOM! SHUBH AARAMBH!
+            </h3>
+            <p class="text-xs sm:text-sm text-brandCyan font-semibold mb-6">
+                Welcome to the Future of Enterprise HRMS & CRM
+            </p>
+
+            <!-- ZVECA Brand Crest Inside Modal -->
+            <div class="py-3 px-6 bg-black/60 rounded-2xl border border-brandCyan/40 mb-6 flex items-center justify-center gap-2 shadow-inner">
+                <span class="text-3xl font-black text-brandCyan font-sans">ZVECA</span>
+                <span class="text-2xl font-black text-festiveGold">↗</span>
+            </div>
+
+            <!-- Animated Radial Countdown Ring -->
+            <div class="relative w-24 h-24 mx-auto mb-5 flex items-center justify-center">
+                <svg class="w-full h-full transform -rotate-90">
+                    <circle cx="48" cy="48" r="40" stroke="rgba(255,255,255,0.15)" stroke-width="5" fill="none" />
+                    <circle id="countdownRing" cx="48" cy="48" r="40" stroke="#FFD700" stroke-width="5" stroke-linecap="round" fill="none"
+                        stroke-dasharray="251.3" stroke-dashoffset="0" class="transition-all duration-1000 ease-linear" />
+                </svg>
+                <span id="countdownNumber" class="absolute text-2xl font-black text-white font-mono">3</span>
+            </div>
+
+            <div class="text-[11px] text-gray-400 font-mono mb-4">
+                Teleporting directly to <strong class="text-festiveGold">https://zveca.com/</strong>
+            </div>
+
+            <button onclick="window.location.href='https://zveca.com/'" class="text-xs text-brandCyan hover:text-white underline font-semibold uppercase tracking-wider transition-colors">
+                Skip Countdown & Enter Now ➔
+            </button>
+        </div>
     </div>
-    <div class="lp-footer-bottom"><span><?= $t(str_replace('{year}', date('Y'), (string) $S['footer']['copyright'])) ?></span><a href="#top">Back to top <i class="ri-arrow-up-line"></i></a></div>
-  </div>
-</footer>
 
-<div class="fab-stack">
-  <button type="button" class="fab fab-top" id="toTop" aria-label="Back to top" title="Back to top"><i class="ri-arrow-up-line"></i></button>
-  <?php if ($g['show_chat'] && $wa !== ''): ?>
-  <a class="fab fab-wa" href="https://wa.me/<?= $wa ?>?text=<?= rawurlencode((string) $g['chat_message']) ?>" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp"><i class="ri-whatsapp-line"></i><span class="fab-label">Chat with us</span></a>
-  <?php endif; ?>
-</div>
+    <!-- ======================================================== -->
+    <!-- 5. SYNTHESIZED WEB AUDIO & PYROTECHNIC PARTICLES SCRIPT  -->
+    <!-- ======================================================== -->
+    <script>
+        lucide.createIcons();
 
-<?= pricing_script() ?>
-<script>
-  (function () {
-    var b = document.getElementById('lpBurger'), m = document.getElementById('lpMenu'), h = document.querySelector('.lp-header');
-    var top = document.getElementById('toTop');
-    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    top && top.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
-    var onScroll = function () { h.classList.toggle('scrolled', window.scrollY > 10); top && top.classList.toggle('show', window.scrollY > 500); };
-    window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
-    var closeMenu = function () { m.classList.remove('open'); b && b.setAttribute('aria-expanded', 'false'); b && (b.innerHTML = '<i class="ri-menu-3-line"></i>'); };
-    b && b.addEventListener('click', function () {
-      var open = m.classList.toggle('open');
-      b.setAttribute('aria-expanded', open);
-      b.innerHTML = open ? '<i class="ri-close-line"></i>' : '<i class="ri-menu-3-line"></i>';
-    });
-    m && m.querySelectorAll('a[href^="#"]').forEach(function (a) { a.addEventListener('click', closeMenu); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+        // -------------------------------------------------------------
+        // WEB AUDIO SYNTHESIS: Multi-Stage Explosive Patakha Engine
+        // -------------------------------------------------------------
+        let audioCtx = null;
+        let isAudioActive = true;
 
-    // Product tour tabs (keyboard: arrow keys move between tabs).
-    var tabs = [].slice.call(document.querySelectorAll('.hx-tab'));
-    var show = function (key, focus) {
-      tabs.forEach(function (t) {
-        var on = t.dataset.tab === key;
-        t.classList.toggle('active', on); t.setAttribute('aria-selected', on); t.tabIndex = on ? 0 : -1;
-        document.getElementById('panel-' + t.dataset.tab).hidden = !on;
-        if (on && focus) t.focus();
-      });
-    };
-    tabs.forEach(function (t, i) {
-      t.addEventListener('click', function () { show(t.dataset.tab); });
-      t.addEventListener('keydown', function (e) {
-        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-        var n = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
-        show(n.dataset.tab, true); n.scrollIntoView({ block: 'nearest', inline: 'center' });
-      });
-    });
-    document.querySelectorAll('a[data-tab]').forEach(function (a) { a.addEventListener('click', function () { show(a.dataset.tab); }); });
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) audioCtx = new AudioContextClass();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
 
-    // Count-up stats and reveal-on-scroll (skipped for reduced motion).
-    if ('IntersectionObserver' in window && !reduce) {
-      var io = new IntersectionObserver(function (es) {
-        es.forEach(function (e) {
-          if (!e.isIntersecting) return;
-          var el = e.target; el.classList.add('in'); io.unobserve(el);
-          if (el.dataset.count) {
-            var end = +el.dataset.count, t0 = performance.now();
-            (function step(t) { var p = Math.min(1, (t - t0) / 1100); el.textContent = Math.round(end * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); })(t0);
-          }
-        });
-      }, { threshold: .15 });
-      document.querySelectorAll('.lp-card, .hx-sec, .hx-role, .hx-timeline li, .hx-screen').forEach(function (el) { el.classList.add('reveal'); io.observe(el); });
-      document.querySelectorAll('[data-count]').forEach(function (el) { io.observe(el); });
-    }
-  })();
-</script>
+        function toggleSoundFX() {
+            isAudioActive = !isAudioActive;
+            const statusEl = document.getElementById('soundStatus');
+            const emojiEl = document.getElementById('soundEmoji');
+            if (isAudioActive) {
+                statusEl.innerText = "Sound: ON";
+                emojiEl.innerText = "🔊";
+                initAudio();
+                playGrandDhamakaAudio();
+            } else {
+                statusEl.innerText = "Sound: OFF";
+                emojiEl.innerText = "🔇";
+            }
+        }
+
+        function playGrandDhamakaAudio() {
+            if (!isAudioActive) return;
+            try {
+                const ctx = initAudio();
+                if (!ctx) return;
+                const now = ctx.currentTime;
+
+                // Stage 1: Ascending High-Velocity Rocket Whistle
+                const whistleOsc = ctx.createOscillator();
+                const whistleGain = ctx.createGain();
+                whistleOsc.type = 'sine';
+                whistleOsc.frequency.setValueAtTime(320, now);
+                whistleOsc.frequency.exponentialRampToValueAtTime(1700, now + 0.35);
+
+                whistleGain.gain.setValueAtTime(0.01, now);
+                whistleGain.gain.linearRampToValueAtTime(0.38, now + 0.22);
+                whistleGain.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+
+                whistleOsc.connect(whistleGain);
+                whistleGain.connect(ctx.destination);
+                whistleOsc.start(now);
+                whistleOsc.stop(now + 0.36);
+
+                // Stage 2: Heavy Sub-Bass Subwoofer Explosion ("BUM")
+                const boomTime = now + 0.32;
+                const subOsc = ctx.createOscillator();
+                const subGain = ctx.createGain();
+                subOsc.type = 'triangle';
+                subOsc.frequency.setValueAtTime(160, boomTime);
+                subOsc.frequency.exponentialRampToValueAtTime(22, boomTime + 0.95);
+
+                subGain.gain.setValueAtTime(1.0, boomTime);
+                subGain.gain.exponentialRampToValueAtTime(0.01, boomTime + 0.95);
+
+                subOsc.connect(subGain);
+                subGain.connect(ctx.destination);
+                subOsc.start(boomTime);
+                subOsc.stop(boomTime + 0.95);
+
+                // Stage 3: Kinetic Noise Shockwave Blast
+                const bufferSize = ctx.sampleRate * 0.8;
+                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.16));
+                }
+
+                const noise = ctx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = ctx.createBiquadFilter();
+                filter.type = "lowpass";
+                filter.frequency.setValueAtTime(1500, boomTime);
+                filter.frequency.exponentialRampToValueAtTime(55, boomTime + 0.7);
+
+                const noiseGain = ctx.createGain();
+                noiseGain.gain.setValueAtTime(1.0, boomTime);
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, boomTime + 0.8);
+
+                noise.connect(filter);
+                filter.connect(noiseGain);
+                noiseGain.connect(ctx.destination);
+                noise.start(boomTime);
+
+                // Stage 4: Rapid Patakha Spark Crackles
+                for (let i = 0; i < 9; i++) {
+                    const popTime = boomTime + 0.18 + Math.random() * 0.65;
+                    const popOsc = ctx.createOscillator();
+                    const popGain = ctx.createGain();
+                    popOsc.type = 'square';
+                    popOsc.frequency.setValueAtTime(700 + Math.random() * 1100, popTime);
+                    popGain.gain.setValueAtTime(0.18, popTime);
+                    popGain.gain.exponentialRampToValueAtTime(0.001, popTime + 0.05);
+
+                    popOsc.connect(popGain);
+                    popGain.connect(ctx.destination);
+                    popOsc.start(popTime);
+                    popOsc.stop(popTime + 0.05);
+                }
+            } catch (err) {
+                console.warn("Audio Context error:", err);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // CANVAS FIRECRACKER ENGINE: Multi-Stage Rockets & Spark Physics
+        // -------------------------------------------------------------
+        const canvas = document.getElementById('fxCanvas');
+        const cCtx = canvas.getContext('2d');
+        let rockets = [];
+        let particles = [];
+        let isLoopRunning = false;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const COLOR_SETS = [
+            ['#00E5FF', '#0072FF', '#FFFFFF', '#70E5FF'], // Electric ZVECA Cyan & Cobalt
+            ['#FFD700', '#FF9900', '#FF3D00', '#FFFFFF'], // Diwali Golden Flame
+            ['#00E5FF', '#FFD700', '#FF3D00', '#FFFFFF']  // Grand Celebration Combination
+        ];
+
+        class Rocket {
+            constructor(sx, sy, tx, ty) {
+                this.x = sx;
+                this.y = sy;
+                this.tx = tx;
+                this.ty = ty;
+                const dist = Math.hypot(tx - sx, ty - sy);
+                this.speed = Math.max(18, dist / 18);
+                const angle = Math.atan2(ty - sy, tx - sx);
+                this.vx = Math.cos(angle) * this.speed;
+                this.vy = Math.sin(angle) * this.speed;
+                this.trail = [];
+            }
+            update() {
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > 8) this.trail.shift();
+                this.x += this.vx;
+                this.y += this.vy;
+                return Math.hypot(this.tx - this.x, this.ty - this.y) >= 22 && this.y > this.ty;
+            }
+            draw(ctx) {
+                for (let i = 0; i < this.trail.length; i++) {
+                    const p = this.trail[i];
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(0, 229, 255, ${i / this.trail.length})`;
+                    ctx.fill();
+                }
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#FFF';
+                ctx.shadowColor = '#00E5FF';
+                ctx.shadowBlur = 12;
+                ctx.fill();
+            }
+        }
+
+        class Spark {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 14 + 2;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.gravity = 0.14;
+                this.drag = 0.94;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.016 + 0.012;
+                this.size = Math.random() * 3 + 1.5;
+            }
+            update() {
+                this.vx *= this.drag;
+                this.vy = this.vy * this.drag + this.gravity;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= this.decay;
+                return this.alpha > 0;
+            }
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 8;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function createBlast(x, y) {
+            const palette = COLOR_SETS[Math.floor(Math.random() * COLOR_SETS.length)];
+            for (let i = 0; i < 140; i++) {
+                const c = palette[Math.floor(Math.random() * palette.length)];
+                particles.push(new Spark(x, y, c));
+            }
+
+            // Screen Blast Vibration
+            const body = document.getElementById('viewportBody');
+            body.classList.remove('camera-blast-shake');
+            void body.offsetWidth;
+            body.classList.add('camera-blast-shake');
+            setTimeout(() => body.classList.remove('camera-blast-shake'), 700);
+
+            // Kinetic Shockwave Circle Expansion
+            triggerShockwave(x, y);
+        }
+
+        function triggerShockwave(x, y) {
+            const ring = document.getElementById('shockwave');
+            ring.style.left = `${x}px`;
+            ring.style.top = `${y}px`;
+            ring.style.transform = 'translate(-50%, -50%) scale(0.1)';
+            ring.style.opacity = '1';
+            ring.classList.remove('hidden');
+
+            requestAnimationFrame(() => {
+                ring.style.transform = 'translate(-50%, -50%) scale(14)';
+                ring.style.opacity = '0';
+            });
+            setTimeout(() => ring.classList.add('hidden'), 850);
+        }
+
+        function spawnRocket(sx, sy, tx, ty) {
+            rockets.push(new Rocket(sx, sy, tx, ty));
+            if (!isLoopRunning) {
+                isLoopRunning = true;
+                requestAnimationFrame(animationLoop);
+            }
+        }
+
+        function animationLoop() {
+            cCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Rockets
+            for (let i = rockets.length - 1; i >= 0; i--) {
+                const r = rockets[i];
+                if (!r.update()) {
+                    createBlast(r.tx, r.ty);
+                    rockets.splice(i, 1);
+                } else {
+                    r.draw(cCtx);
+                }
+            }
+
+            // Sparks
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const s = particles[i];
+                if (!s.update()) {
+                    particles.splice(i, 1);
+                } else {
+                    s.draw(cCtx);
+                }
+            }
+
+            if (rockets.length > 0 || particles.length > 0) {
+                requestAnimationFrame(animationLoop);
+            } else {
+                isLoopRunning = false;
+            }
+        }
+
+        // -------------------------------------------------------------
+        // LAUNCH CLIMAX EXECUTION & 3-SECOND DIRECT REDIRECT
+        // -------------------------------------------------------------
+        let launchTriggered = false;
+
+        function executeDhamakaLaunch(event) {
+            if (launchTriggered) return;
+            launchTriggered = true;
+
+            const clickX = event && event.clientX ? event.clientX : window.innerWidth / 2;
+            const clickY = event && event.clientY ? event.clientY : window.innerHeight / 2;
+
+            // Trigger Patakha Audio Blast
+            playGrandDhamakaAudio();
+
+            // Hardware Haptic Feedback
+            if (navigator.vibrate) {
+                navigator.vibrate([120, 60, 220, 80, 500]);
+            }
+
+            // Detonate Multi-Rocket Pyrotechnic Trajectory
+            const bottom = window.innerHeight;
+            spawnRocket(window.innerWidth * 0.15, bottom, clickX - 120, clickY - 80);
+            spawnRocket(window.innerWidth * 0.85, bottom, clickX + 120, clickY - 80);
+            spawnRocket(window.innerWidth * 0.5, bottom, clickX, clickY - 150);
+
+            setTimeout(() => {
+                playGrandDhamakaAudio();
+                spawnRocket(window.innerWidth * 0.28, bottom, window.innerWidth * 0.35, window.innerHeight * 0.25);
+                spawnRocket(window.innerWidth * 0.72, bottom, window.innerWidth * 0.65, window.innerHeight * 0.25);
+            }, 320);
+
+            // Open Celebration Climax Modal
+            setTimeout(() => {
+                const modal = document.getElementById('celebrationModal');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                startCountdownRing();
+            }, 500);
+        }
+
+        function startCountdownRing() {
+            let count = 3;
+            const countEl = document.getElementById('countdownNumber');
+            const ringEl = document.getElementById('countdownRing');
+            const circumference = 2 * Math.PI * 40; // ~251.3
+
+            const interval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countEl.innerText = count;
+                    const offset = circumference * (1 - count / 3);
+                    ringEl.style.strokeDashoffset = offset;
+                    playGrandDhamakaAudio();
+                } else {
+                    clearInterval(interval);
+                    countEl.innerText = "🚀";
+                    ringEl.style.strokeDashoffset = circumference;
+                    // Auto-teleport to ZVECA official domain
+                    window.location.href = "https://zveca.com/";
+                }
+            }, 1000);
+        }
+    </script>
 </body>
 </html>
